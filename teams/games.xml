@@ -1,7 +1,7 @@
 <image>
 	<profiles>
 		<profile name="GamesDesktop" description="Desktop packages for Games Lab">
-			<requires profile="Xfce-Desktop"/>
+			<requires profile="KDE-Desktop"/>
 		</profile>
 		<profile name="Games-Live" description="Games Lab Live DVD">
 			<requires profile="GamesDesktop"/>
@@ -13,7 +13,7 @@
 		</profile>
 	</profiles>
 	<packages type="bootstrap" patternType="plusRecommended" profiles="GamesDesktop">
-		<package name="fedora-release"/>
+		<package name="fedora-release-kde"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="GamesDesktop">
 		<!-- The point of this is to show off Fedora games, not running Windows ones -->
