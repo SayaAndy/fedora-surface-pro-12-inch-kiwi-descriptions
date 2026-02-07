@@ -21,7 +21,9 @@
 		<!-- <package name="deja-dup"/> -->
 		<!-- Add extra gnome applications -->
 		<package name="gnome-calendar"/>
-		<package name="gnome-pomodoro"/>
+		<package name="gnome-shell-extension-gsconnect"/>
+		<!-- Some convertible devices have broken automatic screen rotation on GNOME Wayland -->
+		<package name="gnome-shell-extension-screen-autorotate"/>
 		<package name="gnome-todo"/>
 		<!-- Add cosmetic for terminal -->
 		<package name="powerline"/>
