@@ -1,7 +1,10 @@
 <image>
 	<profiles>
+		<profile name="GamesKDEDesktop" description="KDE Desktop packages for Games Lab">
+			<requires profile="DesktopCommon"/>
+		</profile>
 		<profile name="GamesDesktop" description="Desktop packages for Games Lab">
-			<requires profile="KDE-Desktop"/>
+			<requires profile="GamesKDEDesktop"/>
 		</profile>
 		<profile name="Games-Live" description="Games Lab Live DVD">
 			<requires profile="GamesDesktop"/>
@@ -12,16 +15,37 @@
 			<requires profile="BootDiskCore"/>
 		</profile>
 	</profiles>
-	<packages type="bootstrap" patternType="plusRecommended" profiles="GamesDesktop">
+	<packages type="bootstrap" patternType="plusRecommended" profiles="GamesKDEDesktop">
 		<package name="fedora-release-kde"/>
+	</packages>
+	<packages type="image" patternType="plusRecommended" profiles="GamesKDEDesktop">
+		<!-- install env-group to resolve RhBug:1891500 -->
+		<namedCollection name="kde-desktop-environment"/>
+		<namedCollection name="kde-apps"/>
+		<namedCollection name="kde-media"/>
+		<namedCollection name="firefox"/>
+		<namedCollection name="x86-emulation" arch="aarch64"/>
+		<package name="kde-l10n"/>
+		<ignore name="gnome-disk-utility"/> <!-- redundant with kde partitionmanager -->
+		<ignore name="mariadb-server-utils"/> <!-- Not needed on desktops (pagure.io:fedora-kde/SIG#566) -->
+		<ignore name="system-config-language"/> <!-- redundant with kcms -->
+		<ignore name="system-config-printer"/> <!-- redundant with kcms -->
+		<!-- drop tracker stuff pulled in by gtk3 (pagureio:fedora-kde/SIG#124) -->
+		<ignore name="tracker"/>
+		<ignore name="tracker-miners"/>
+		<!-- space issues -->
+		<ignore name="digikam"/> <!-- digikam has duplicate functionality with gwenview (~28 megs) -->
+		<ignore name="k3b"/> <!-- ~15 megs -->
+		<ignore name="kipi-plugins"/> <!-- ~8 megs + drags in marble -->
+		<ignore name="krusader"/> <!-- ~4 megs -->
+		<ignore name="ktorrent"/> <!-- ~15 megs -->
+		<ignore name="initial-setup"/> <!-- redundant with plasma-setup -->
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="GamesDesktop">
 		<!-- The point of this is to show off Fedora games, not running Windows ones -->
 		<ignore name="wine"/>
 		<!-- Remove LibreOffice, we're here to have fun! -->
 		<ignore name="libreoffice*"/>
-		<!-- Extra screensavers aren't much help for the games lab -->
-		<ignore name="xscreensaver-extras"/>
 		<!-- Allow joysticks and gamepads to work -->
 		<package name="joystick-support"/>
 		<package name="steam-devices"/>
