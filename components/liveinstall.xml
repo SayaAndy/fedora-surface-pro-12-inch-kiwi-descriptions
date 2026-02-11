@@ -2,7 +2,7 @@
 	<profiles>
 		<profile name="LiveInstall" description="Live Install ISO">
 			<requires profile="BaseCommon"/>
-			<requires profile="BootCore"/>
+			<requires profile="BootCoreLive"/>
 		</profile>
 	</profiles>
 	<preferences profiles="LiveInstall" arch="x86_64">
