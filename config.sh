@@ -410,8 +410,8 @@ cat >> /usr/share/applications/fedora-design-team.desktop << FOE
 [Desktop Entry]
 Name=Design Team Info
 GenericName=About Design Team
-Comment=Wiki page of Design Team
-Exec=xdg-open https://fedoraproject.org/wiki/Design
+Comment=Documentation about Design Team
+Exec=xdg-open https://docs.fedoraproject.org/en-US/design/
 Type=Application
 Icon=applications-internet
 Categories=Documentation;
@@ -430,10 +430,13 @@ fi
 FOE
 # End powerline override
 
-#Override the favorite desktop application in Dash
-sed -i "s/favorite-apps=."'*'"/favorite-apps=['org.mozilla.firefox.desktop', 'shotwell.desktop', 'gimp.desktop', 'darktable.desktop','krita.desktop', 'inkscape.desktop', 'blender.desktop', 'libreoffice-writer.desktop', 'scribus.desktop', 'pitivi.desktop', 'nautilus.desktop', 'bijiben.desktop', 'anaconda.desktop', 'list-design-tutorials.desktop']/" /usr/libexec/livesys/sessions.d/livesys-gnome
+# Override the favorite desktop application in Dash
+cat >> /usr/share/glib-2.0/schemas/org.gnome.shell.gschema.override << FOE
+[org.gnome.shell]
+favorite-apps=['org.mozilla.firefox.desktop', 'shotwell.desktop', 'gimp.desktop', 'darktable.desktop', 'krita.desktop', 'inkscape.desktop', 'blender.desktop', 'libreoffice-writer.desktop', 'scribus.desktop', 'kdenlive.desktop', 'nautilus.desktop', 'anaconda.desktop', 'list-design-tutorials.desktop']
+FOE
 
-# rebuild schema cache with any overrides we installed
+# Rebuild schema cache with any overrides we installed
 glib-compile-schemas /usr/share/glib-2.0/schemas
 fi
 
