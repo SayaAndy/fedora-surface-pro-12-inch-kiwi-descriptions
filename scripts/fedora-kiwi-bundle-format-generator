@@ -14,7 +14,6 @@ import xml.etree.ElementTree as ET
 parser = ArgumentParser(description="Generator of kiwi bundle formats for Fedora image builds")
 parser.add_argument("kiwi_file", type=Path, default="Fedora.kiwi", help="kiwi description file")
 parser.add_argument("image_profile", type=str, help="kiwi image profile")
-parser.add_argument("--oci-variant", "-o", action="store_true", help="generate oci variant")
 args = parser.parse_args()
 
 xml_tree = ET.parse(args.kiwi_file)
@@ -23,9 +22,4 @@ image_root = xml_tree.getroot()
 image_basename = image_root.attrib["name"]
 image_profile = args.image_profile
 
-image_bundle_format = f"{image_basename}-{image_profile}-%v.%I.%A"
-
-if args.oci_variant:
-	print(f"{image_bundle_format}.%T")
-else:
-	print(image_bundle_format)
+print(f"{image_basename}-{image_profile}-%v.%I.%A")
