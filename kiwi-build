@@ -16,7 +16,7 @@ usage() {
 	exit 255
 }
 
-optTemp=$(getopt --options '+k:,f:,i,o:,t:,p:,r:,d,h' --longoptions 'kiwi-description-dir:,kiwi-file:,isolated,output-dir:,image-type:,image-profile:,image-release:,debug,help' --name "$kiwibuildsh" -- "$@")
+optTemp=$(getopt --options '+k:,f:,i,b:,o:,t:,p:,r:,d,h' --longoptions 'kiwi-description-dir:,kiwi-file:,isolated,kiwi-bundle-format:,output-dir:,image-type:,image-profile:,image-release:,debug,help' --name "$kiwibuildsh" -- "$@")
 eval set -- "$optTemp"
 unset optTemp
 
@@ -29,6 +29,7 @@ kiwi_isolated=
 # For compatibility with older scripts where these did not exist
 kiwi_description_dir="./"
 kiwi_file="Fedora.kiwi"
+kiwi_bundle_format=
 kiwibuild_extra_args=
 
 while true; do
@@ -36,6 +37,7 @@ while true; do
 		-i|--isolated) kiwi_isolated=1; shift ;;
 		-k|--kiwi-description-dir) kiwi_description_dir="$2" ; shift 2 ;;
 		-f|--kiwi-file) kiwi_file="$2" ; shift 2 ;;
+		-b|--kiwi-bundle-format) kiwi_bundle_format="$2" ; shift 2 ;;
 		-o|--output-dir) output_dir="$2" ; shift 2 ;;
 		-t|--image-type) image_type="$2" ; shift 2 ;;
 		-p|--image-profile) image_profile="$2" ; shift 2 ;;
@@ -54,8 +56,10 @@ if [ -z "$output_dir" ] || [ -z "$image_type" ] || [ -z "$image_profile" ] || [ 
 	usage
 fi
 
-# Set the bundle format after we know the profile
-kiwi_bundle_format=$("${kiwibuild_scriptdir}/scripts/fedora-kiwi-bundle-format-generator" "${kiwi_file}" "${image_profile}")
+if [ -z "$kiwi_bundle_format" ]; then
+	# Set the bundle format after we know the profile
+	kiwi_bundle_format=$("${kiwibuild_scriptdir}/scripts/fedora-kiwi-bundle-format-generator" "${kiwi_file}" "${image_profile}")
+fi
 
 if [ "$image_type" = "iso" ]; then
 	# Add parameters for embedded ISO IDs
