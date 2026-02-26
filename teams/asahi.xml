@@ -35,8 +35,6 @@
 		<package name="mesa-dri-drivers.i686"/>
 		<package name="mesa-vulkan-drivers.x86_64"/>
 		<package name="mesa-vulkan-drivers.i686"/>
-		<package name="mesa-va-drivers.x86_64"/>
-		<package name="mesa-va-drivers.i686"/>
 		<package name="mesa-demos.x86_64"/>
 		<package name="libglvnd-opengl.x86_64"/>
 		<package name="libglvnd-opengl.i686"/>
