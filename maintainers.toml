@@ -111,6 +111,9 @@ maintainers = [ "Matthew Kosarek", "Neal Gompa" ]
 [spins.phosh.x86_64]
 fas = [ "lihis", "phosh-sig" ]
 maintainers = [ "Tomi Lähteenmäki", "phosh-sig" ]
+[spins.phosh.aarch64]
+fas = [ "lihis", "phosh-sig" ]
+maintainers = [ "Tomi Lähteenmäki", "phosh-sig" ]
 
 # Silverblue
 [silverblue.x86_64]
