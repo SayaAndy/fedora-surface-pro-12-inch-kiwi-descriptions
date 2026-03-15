@@ -419,7 +419,7 @@ FOE
 chmod a+x /usr/share/applications/fedora-design-team.desktop
 
 # Use Powerline in bash
-cat >>  $HOME/.bashrc << FOE
+cat >>  /etc/profile.d/powerline-shell.sh << FOE
 # Enable powerline daemon
 if [ -f `which powerline-daemon` ]; then
   powerline-daemon -q
@@ -428,6 +428,7 @@ if [ -f `which powerline-daemon` ]; then
   . /usr/share/powerline/bash/powerline.sh
 fi
 FOE
+chmod 644 /etc/profile.d/powerline-shell.sh
 # End powerline override
 
 # Override the favorite desktop application in Dash
