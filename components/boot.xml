@@ -106,9 +106,11 @@
 		<package name="systemd-resolved"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="BootCore">
+		<ignore name="kernel-*debug*"/>
 		<package name="kernel-core"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="BootCoreLive">
+		<ignore name="kernel-*debug*"/>
 		<!-- Use kernel-uki-dtbloader for aarch64 -->
 		<package name="kernel-core" arch="x86_64,riscv64,ppc64le,s390x"/>
 		<package name="kernel-uki-dtbloader" arch="aarch64"/>
@@ -131,6 +133,7 @@
 		<package name="grub2-efi-x64-cdboot" arch="x86_64"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="BootDiskCore">
+		<ignore name="kernel-*debug*"/>
 		<package name="arm-image-installer" arch="aarch64"/>
 		<package name="glibc-all-langpacks"/>
 		<package name="kernel"/>
