@@ -199,7 +199,7 @@
 		</type>
 	</preferences>
 	<packages type="bootstrap" patternType="plusRecommended" profiles="CloudCore,CloudCoreUKI">
-		<package name="fedora-release-eln"/>
+		<package name="fedora-eln-release"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="CloudCore">
 		<namedCollection name="cloud-server-environment"/>

@@ -77,7 +77,7 @@
 		<ignore name="grubby"/>
 		<ignore name="langpacks-en_GB"/>
 		<ignore name="sssd-client"/>
-		<package name="fedora-release-eln"/>
+		<package name="fedora-eln-release"/>
 		<package name="bash"/>
 		<package name="coreutils"/>
 		<package name="rpm"/>
@@ -130,7 +130,7 @@
 		<package name="diffutils"/>
 		<package name="dnf5"/>
 		<package name="dnf5-plugins"/>
-		<package name="fedora-release-eln"/>
+		<package name="fedora-eln-release"/>
 		<package name="file"/>
 		<package name="findutils"/>
 		<package name="flatpak-spawn"/>

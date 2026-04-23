@@ -14,7 +14,7 @@
 		<package name="coreutils"/>
 		<package name="dnf5"/>
 		<package name="dnf5-plugins"/>
-		<package name="fedora-release-eln"/>
+		<package name="fedora-eln-release"/>
 		<package name="rpm"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="WSL-Base">
