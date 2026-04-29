@@ -12,7 +12,6 @@
 		<ignore name="audacious"/> <!-- breaks the desktop -->
 		<!-- drop things for size -->
 		<ignore name="@3d-printing"/>
-		<ignore name="@admin-tools"/>
 		<ignore name="@mate-applications"/>
 		<ignore name="brasero"/>
 		<ignore name="fedora-icon-theme"/>

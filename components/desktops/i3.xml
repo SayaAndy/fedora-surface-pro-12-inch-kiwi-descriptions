@@ -7,7 +7,6 @@
 	<packages type="image" patternType="plusRecommended" profiles="i3-Desktop">
 		<!-- install env-group to resolve RhBug:1891500 -->
 		<namedCollection name="i3-desktop-environment"/>
-		<namedCollection name="admin-tools"/>
 		<package name="dex-autostart"/>
 		<package name="fedora-release-i3"/>
 		<package name="feh"/>

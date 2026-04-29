@@ -19,7 +19,6 @@
 		<ignore name="pt-sans-fonts"/> <!-- Cyrillic (already supported by DejaVu) -->
 		<!-- these do not currently work: https://pagure.io/fedora-kiwi-descriptions/issue/112
 		<ignore name="@input-methods"/>
-		<ignore name="@admin-tools"/>
 		-->
 		<!-- because the input-methods group exclusion doesn't work, these aren't safe
 		<ignore name="scim*"/>
