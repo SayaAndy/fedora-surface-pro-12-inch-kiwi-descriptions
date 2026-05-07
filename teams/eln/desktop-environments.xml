@@ -32,6 +32,7 @@
 	<packages type="image" patternType="plusRecommended" profiles="GNOME-Desktop">
 		<namedCollection name="gnome-desktop"/>
 		<namedCollection name="workstation-product"/>
+		<package name="gnome-classic-session"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="KDE-Desktop">
 		<namedCollection name="kde-desktop-environment"/>
