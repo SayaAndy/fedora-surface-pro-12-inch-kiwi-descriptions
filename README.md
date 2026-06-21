@@ -1,5 +1,5 @@
 
-# fedora-kiwi-descriptions
+# Fedora KIWI image descriptions
 
 This project is used to manage the Fedora KIWI image descriptions used in composing Fedora release images.
 
