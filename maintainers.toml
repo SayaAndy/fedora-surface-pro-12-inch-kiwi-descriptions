@@ -82,11 +82,7 @@ maintainers = [ "JT Pennington", "Cristian Le", "SciTech SIG" ]
  
 [labs.scientific.x86_64]
 fas = [ "q5sys", "lecris", "scitech"  ]
-maintainers = [ "JT Pennington", "Cristian Le", "SciTech SIG" ] 
-
-[labs.robotics.x86_64]
-fas = [ "lrossett", "robotics-sig" ]
-maintainers = [ "Leonardo Rossetti", "Robotics SIG" ]
+maintainers = [ "JT Pennington", "Cristian Le", "SciTech SIG" ]
 
 [spins.i3.x86_64]
 fas = [ "jflory7", "defolos", "nasirhm", "odilhao", "x3mboy" ]

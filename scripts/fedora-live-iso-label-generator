@@ -49,7 +49,6 @@ volume_id_substitutions = {
      # Note https://pagure.io/pungi-fedora/issue/533
      "Python-Classroom": "Clss",
      "Python_Classroom": "Clss",
-             "Robotics": "Robo",
        "Scientific_KDE": "SciK",
              "Security": "Sec",
               "Sericea": "Src",

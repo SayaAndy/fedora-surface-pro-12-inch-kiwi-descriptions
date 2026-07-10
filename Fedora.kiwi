@@ -62,7 +62,6 @@
 	<include from="this://./teams/games.xml"/>
 	<include from="this://./teams/security.xml"/>
 	<include from="this://./teams/jam.xml"/>
-	<include from="this://./teams/robotics.xml"/>
 	<packages type="bootstrap">
 		<package name="filesystem"/>
 	</packages>
