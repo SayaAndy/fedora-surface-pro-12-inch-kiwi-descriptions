@@ -1,0 +1,10 @@
+[Unit]
+Description=HexagonRPC Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/hexagonrpcd -f /dev/fastrpc-adsp-secure -s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

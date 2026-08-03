@@ -1,0 +1,13 @@
+[Unit]
+Description=Wire up Surface Pro rear camera (media-ctl pipeline)
+After=dev-media0.device
+Wants=dev-media0.device
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/wireupcameras.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
