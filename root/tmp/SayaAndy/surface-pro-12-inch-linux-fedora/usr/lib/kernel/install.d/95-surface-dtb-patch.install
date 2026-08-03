@@ -1,0 +1,53 @@
+#!/bin/bash
+# Surface Pro 12" (Snapdragon X1P-42-100): put a devicetree line into the BLS
+# loader entry.
+#
+# None of Fedora's built-in mechanisms can do this on their own:
+#
+#  * /etc/kernel/devicetree is only read by 90-loaderentry.install, which exits
+#    early unless KERNEL_INSTALL_LAYOUT=bls. Fedora has no /boot/<entry-token>
+#    directory, so kernel-install always computes layout=other here and that
+#    plugin never runs.
+#
+#  * GRUB_DEVICETREE in /etc/default/grub does work on a running system (see
+#    20-grub.install's mkbls), but anaconda rewrites /etc/default/grub from a
+#    fixed list of keys it knows during installation, and GRUB_DEVICETREE is not
+#    on that list, so it is silently discarded on a fresh install.
+#
+# A kernel-install plugin survives both: anaconda runs kernel-install inside the
+# target during installation, and anything sorting after 20-grub.install sees
+# the entry it has just (re)generated. Because 20-grub.install rewrites the
+# entry from scratch on every kernel install, this must re-apply each time --
+# hence a plugin rather than a one-shot fixup.
+
+set -eu
+umask 022
+
+COMMAND="${1:-}"
+KVER="${2:-}"
+
+[ "$COMMAND" = "add" ] || exit 0
+[ -n "$KVER" ] || exit 0
+
+DTB_NAME=x1p42100-microsoft-surface-pro-12-inch.dtb
+DTB_REL="qcom/$DTB_NAME"
+BOOT_ROOT="${KERNEL_INSTALL_BOOT_ROOT:-/boot}"
+
+# 60-surface-dtb.install stages the dtb into this kernel's module tree; fall
+# back to the master copy if it has not run (or was removed).
+DTB_SRC="/usr/lib/modules/${KVER}/dtb/${DTB_REL}"
+if [ ! -f "$DTB_SRC" ]; then
+	DTB_SRC="/etc/surface-dtb/$DTB_NAME"
+fi
+[ -f "$DTB_SRC" ] || exit 0
+
+# The boot loader reads the dtb from the boot filesystem, not the module tree
+install -Dm644 "$DTB_SRC" "${BOOT_ROOT}/dtb-${KVER}/${DTB_REL}"
+
+# BLS entry paths are relative to the boot filesystem root, matching the
+# "linux /vmlinuz-$KVER" line 20-grub.install writes.
+for entry in "${BOOT_ROOT}"/loader/entries/*-"${KVER}".conf; do
+	[ -f "$entry" ] || continue
+	grep -q '^devicetree[[:space:]]' "$entry" && continue
+	sed -i "/initrd/i devicetree /dtb-${KVER}/${DTB_REL}" "$entry"
+done

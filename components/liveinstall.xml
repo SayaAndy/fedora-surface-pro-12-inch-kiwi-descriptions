@@ -5,44 +5,15 @@
 			<requires profile="BootCoreLive"/>
 		</profile>
 	</profiles>
-	<preferences profiles="LiveInstall" arch="x86_64">
-		<type image="iso"
-			publisher="Fedora Project" volid="Fedora_Linux" application_id="Fedora_Linux"
-			primary="true" flags="dmsquash" filesystem="erofs" erofscompression="lzma,level=6" mediacheck="true"
-			firmware="uefi" efiparttable="gpt" efifatimagesize="30" kernelcmdline="quiet rhgb"
-			fscreateoptions="-Efragments -C 1048576"
-			>
-			<bootloader name="grub2" grub_template="grub-x86.cfg.iso-template" console="console" timeout="10"/>
-		</type>
-	</preferences>
 	<preferences profiles="LiveInstall" arch="aarch64">
 		<type image="iso"
 			publisher="Fedora Project" volid="Fedora_Linux" application_id="Fedora_Linux"
 			primary="true" flags="dmsquash" filesystem="erofs" erofscompression="lzma,level=6" mediacheck="true"
-			firmware="uefi" efiparttable="gpt" efifatimagesize="30" kernelcmdline="quiet rhgb"
+			firmware="efi" efiparttable="gpt" efifatimagesize="30"
+			kernelcmdline="quiet rhgb clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 rd.live.ram=1"
 			fscreateoptions="-Efragments -C 1048576"
 			>
 			<bootloader name="grub2" grub_template="grub-arm.cfg.iso-template" console="console" timeout="10"/>
-		</type>
-	</preferences>
-	<preferences profiles="LiveInstall" arch="riscv64">
-		<type image="iso"
-			publisher="Fedora Project" volid="Fedora_Linux" application_id="Fedora_Linux"
-			primary="true" flags="dmsquash" filesystem="erofs" erofscompression="lzma,level=6" mediacheck="true"
-			firmware="uefi" efiparttable="gpt" efifatimagesize="30" kernelcmdline="quiet rhgb"
-			fscreateoptions="-Efragments -C 1048576"
-			>
-			<bootloader name="grub2" grub_template="grub-riscv64.cfg.iso-template" console="console" timeout="10"/>
-		</type>
-	</preferences>
-	<preferences profiles="LiveInstall" arch="ppc64le">
-		<type image="iso"
-			publisher="Fedora Project" volid="Fedora_Linux" application_id="Fedora_Linux"
-			primary="true" flags="dmsquash" filesystem="erofs" erofscompression="lzma,level=6" mediacheck="true"
-			firmware="ofw" kernelcmdline="quiet rhgb"
-			fscreateoptions="-Efragments -C 1048576"
-			>
-			<bootloader name="grub2" grub_template="grub-ppc.cfg.iso-template" console="console" timeout="10"/>
 		</type>
 	</preferences>
 	<packages type="iso" patternType="plusRecommended" profiles="LiveInstall">
@@ -57,7 +28,10 @@
 		<package name="dracut-live"/>
 		<package name="glibc-all-langpacks"/>
 		<package name="isomd5sum"/>
-		<package name="kernel"/>
+		<!-- Surface Pro 12": no plain "kernel" package here, it hard-Requires
+		     kernel-uki-dtbloader on aarch64, which conflicts with BootCoreLive's
+		     kernel-core. grub2's ISO kernel lookup just needs a vmlinuz in /boot,
+		     which kernel-core (already installed there) already provides. -->
 		<package name="kernel-modules"/>
 		<package name="kernel-modules-extra"/>
 		<package name="livesys-scripts"/>

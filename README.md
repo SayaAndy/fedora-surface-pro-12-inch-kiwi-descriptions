@@ -1,42 +1,48 @@
 
-# Fedora KIWI image descriptions
+# Fedora KIWI image descriptions, modified to build & launch for Surface Pro 12" Gen 1
 
-This project is used to manage the Fedora KIWI image descriptions used in composing Fedora release images.
+It is the fork of the original [KIWI image descriptions](https://forge.fedoraproject.org/releng/kiwi-descriptions), modified for launching Fedora Linux Rawhide Live ISO on Surface Pro 12" Gen 1 (and further installing it on the device).
 
-The `rawhide` branch is used for Fedora Rawhide images and each release branch is used by that release.
+I bought this device as I viewed it as a great Linux GNOME tablet, but after several days, many hours of work of trying to do so, I must say that installing a distribution here (and then having it work fine) is a huge pain in the ass.
 
-All changes should be made via the PR workflow.
+> Special thanks to [harrisonvanderbyl](https://github.com/harrisonvanderbyl), this project wouldn't be possible without his huge contribution to this whole Linux on Surface ARM business!
 
-## Image variants
+## How to run
 
-Please look at [`VARIANTS`](VARIANTS.md) for details on the available
-configurations that can be built.
+**The compiled ISOs can be downloaded [here](https://dist.sayag.it/surface-pro-12in-ports/fedora/rawhide).**
 
-## Image build quickstart
+This KIWI project is built mainly on the base of Fedora Workstation Rawhide LiveCD ISO. Trying a stable version (the latest is Fedora 44 at the time of writing this) is possible, but not tested for now.
 
-This is generally tested and expected to run on the latest stable release of Fedora Linux.
-Other distributions may work, but there are no guarantees.
+If you want to compile this image manually, **the build arch must be `aarch64`**. It means that if you are on an `amd64` machine, you would have to use aarch64 instructions emulation tools like `binfmt`. Unfortunately, such a tool will drastically increase the compilation time.
 
-Set up your development environment and run the image build (substitute `<image_type>` and `<image_profile>` for the appropriate settings):
+To build this on Fedora Linux:
 
 ```bash
 # Install kiwi
 []$ sudo dnf --assumeyes install kiwi kiwi-systemdeps distribution-gpg-keys
 # Run the image build
 []$ sudo ./kiwi-build --kiwi-file=Fedora.kiwi --image-type=<image_type> --image-profile=<image_profile> --output-dir ./outdir
+# An example for Workstation Live CD ISO
+[]$ sudo ./kiwi-build --kiwi-file=Fedora.kiwi --image-type=iso --image-profile=Workstation-Live --output-dir ./outdir
 ```
+
+## What is left out (for now)
+
+* Live CD has to run in RAM, so `rd.live.ram=1` is set for cmdline. Otherwise, at least on my ancient flash drive, it fails to load multiple necessary services, including `polkit`.
+* No rescue vmlinuz.
+* No secure boot possible for this ISO for now, as the platform used is `efi` and not `uefi`.
+* No GRUB auto hidden menu. Trying to have the menu hidden results in system simply crashing after trying to boot it.
+* `wireupcameras.service` fails on installed system (not in Live CD though).
+
+## Image variants
+
+Please look at [`VARIANTS`](VARIANTS.md) for details on the available configurations that can be built.
 
 ## CI information
 
-This project is tested using the [Software Factory Zuul CI instance](https://fedora.softwarefactory-project.io/zuul/project/pagure.io/fedora-kiwi-descriptions)
-using the [Test Management Tool](https://tmt.readthedocs.io/).
+This project is yet to adapt CI, but it is coming.
 
-The Zuul configuration is generated from the Jinja2 template `.zuul.yaml.j2`.
-When adding or removing a tmt plan, please run the following command to regenerate the Zuul configuration:
-
-```bash
-[]$ make generate-zuul-config
-```
+For now the images are being built and tested manually on my personal Surface Pro 12" Gen 1 (16 GB RAM, 512 GB storage).
 
 ## Licensing
 
