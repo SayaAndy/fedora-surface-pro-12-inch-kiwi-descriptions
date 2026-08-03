@@ -9,6 +9,5 @@
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="HardwareCommon">
 		<namedCollection name="hardware-support"/>
-		<package name="bcm283x-firmware" arch="aarch64"/>
 	</packages>
 </image>

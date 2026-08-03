@@ -2,6 +2,14 @@
 
 set -euxo pipefail
 
+installarch=$(uname -m)
+kver=$(basename "$(ls -d /usr/lib/modules/*/)")
+
+if [[ $installarch != "aarch64" ]]; then
+    printf 'Error: this specific config is only meant for Surface Pro 12", and it is built on ARM64 chip (you have "%s" as build arch).' "$installarch"
+    exit 1
+fi
+
 #======================================
 # Functions...
 #--------------------------------------
@@ -41,13 +49,22 @@ if [[ "$kiwi_profiles" != *"Container"* ]] && [[ "$kiwi_profiles" != *"FEX"* ]] 
 	echo "GRUB_DISABLE_SUBMENU=true" >> /etc/default/grub
 	## Disable recovery entries to match Fedora
 	echo "GRUB_DISABLE_RECOVERY=true" >> /etc/default/grub
-	if [[ "$kiwi_profiles" == *"Disk"* ]]; then
-		## Write `menu_auto_hide=1` into grubenv to match Fedora anaconda installs
-		## Set boot_indeterminate to avoid displaying the grub menu on first boot
-		if [[ "$kiwi_profiles" != *"Server"* ]] || [[ "$kiwi_profiles" != *"Cloud"* ]]; then
-			grub2-editenv /boot/grub2/grubenv set menu_auto_hide=1 boot_indeterminate=1
-		fi
-	fi
+	## Surface Pro 12" (Snapdragon X1P-42-100): grub's gfxterm/GOP video probing
+	## crashes on this GPU. Force plain text console, skip framebuffer handoff.
+	echo "GRUB_TERMINAL_OUTPUT=console" >> /etc/default/grub
+	echo "GRUB_GFXPAYLOAD_LINUX=text" >> /etc/default/grub
+	## Surface Pro 12": GRUB_DEVICETREE is the only mechanism Fedora honours for
+	## putting a devicetree line in a BLS entry -- 20-grub.install's mkbls emits
+	## "devicetree /dtb-$kver/$GRUB_DEVICETREE". /etc/kernel/devicetree does
+	## nothing here: /boot/<machine-id> does not exist, so kernel-install runs
+	## with layout=other and 90-loaderentry.install (which would read it) bails.
+	echo "GRUB_DEVICETREE=qcom/x1p42100-microsoft-surface-pro-12-inch.dtb" >> /etc/default/grub
+	## Upstream sets menu_auto_hide=1 + boot_indeterminate=1 here for Disk images
+	## to match anaconda's behaviour. Deliberately not done for Surface Pro 12":
+	## with the menu hidden, GRUB counts down GRUB_TIMEOUT against a blank screen
+	## and then crashes during the hand-off on this firmware, so the first boot
+	## always fails and only the second succeeds. The equivalent for the
+	## anaconda-installed system is the /etc/anaconda/conf.d drop-in below.
 fi
 
 #======================================
@@ -144,15 +161,6 @@ fi
 #======================================
 # Setup default customizations
 #--------------------------------------
-
-if [[ "$kiwi_profiles" == *"Disk"* ]]; then
-	# Find the architecture we are on
-	installarch=$(uname -m)
-	# Setup Raspberry Pi firmware
-	if [[ $installarch == "aarch64" ]]; then
-		cp -a /usr/share/uboot/rpi_arm64/u-boot.bin /boot/efi/rpi-u-boot.bin
-	fi
-fi
 
 if [[ "$kiwi_profiles" == *"Server"* ]]; then
 	# Trigger lvm-devices-import.path and .service to create
@@ -450,6 +458,196 @@ EOF
 fi
 
 #======================================
+# Surface Pro 12" customizations
+#--------------------------------------
+
+# /etc/surface-dtb is the master copy 60-surface-dtb.install re-stages into each
+# new kernel's module tree on update. The other two are what that hook and
+# 10-devicetree.install would normally produce, done up front here because
+# kernel-install never runs during this build -- without the module-tree copy,
+# anything keyed off /usr/lib/modules/$kver/dtb (including the anaconda
+# post-script) finds nothing and silently does nothing.
+install -Dm644 /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/boot/dtb \
+	"/etc/surface-dtb/x1p42100-microsoft-surface-pro-12-inch.dtb"
+install -Dm644 /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/boot/dtb \
+	"/usr/lib/modules/$kver/dtb/qcom/x1p42100-microsoft-surface-pro-12-inch.dtb"
+install -Dm644 /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/boot/dtb \
+	"/boot/dtb-$kver/qcom/x1p42100-microsoft-surface-pro-12-inch.dtb"
+# /boot/dtb -> dtb-$kver is what grubby's 10-devicetree.install maintains, and
+# what the boot loader entry's devicetree path resolves through
+ln -sfn "dtb-$kver" /boot/dtb
+# Defer qcom_q6v5_pas past switch-root so the DSPs' auto_boot can actually find
+# their firmware; see the comments in the file for the full failure mode.
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dracut.conf.d/surface-pro-12-inch.conf \
+    /etc/dracut.conf.d/surface-pro-12-inch.conf
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/kernel/cmdline \
+    /etc/kernel/cmdline
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/kernel/devicetree \
+    /etc/kernel/devicetree
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/kernel/install.conf \
+    /etc/kernel/install.conf
+install -Dm755 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/usr/lib/kernel/install.d/60-surface-dtb.install \
+	/usr/lib/kernel/install.d/60-surface-dtb.install
+# Puts the "devicetree" line into the BLS entry. This is the only mechanism that
+# survives an anaconda install: /etc/kernel/devicetree is never read (layout is
+# always "other" on Fedora, so 90-loaderentry.install bails) and GRUB_DEVICETREE
+# is dropped when anaconda rewrites /etc/default/grub from its own key list.
+# kernel-install plugins do run in the target during installation, and sorting
+# after 20-grub.install means the entry it generates is already there to patch.
+install -Dm755 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/usr/lib/kernel/install.d/95-surface-dtb-patch.install \
+	/usr/lib/kernel/install.d/95-surface-dtb-patch.install
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/udev/rules.d/61-sensors-surface-pro-12-inch.rules \
+    /etc/udev/rules.d/61-sensors-surface-pro-12-inch.rules
+
+if [[ "$kiwi_profiles" == *"Live"* ]]; then
+	# Stop anaconda hiding the GRUB menu on the installed system's first boot.
+	# Only meaningful in the installer environment, hence Live-only; see the
+	# comments in the file for why a hidden menu breaks this device.
+	install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/anaconda/conf.d/90-surface-pro-12-inch.conf \
+		/etc/anaconda/conf.d/90-surface-pro-12-inch.conf
+
+	# Ship the CD-boot grub on the ISO, not the disk-boot one.
+	#
+	# kiwi picks the ISO's EFI loader by globbing the image root (see
+	# Defaults.get_unsigned_grub_loader, target_type='iso'). That pattern list
+	# has a CD-boot entry for x86_64 (gcdx64.efi) but none for aarch64, so here
+	# it falls through to grubaa64.efi -- the *disk* image, whose baked-in grub
+	# prefix is /EFI/fedora. Meanwhile kiwi writes its earlyboot config to
+	# /EFI/BOOT/grub.cfg, and iso-esp-excludes.yaml deletes "fedora" from the
+	# embedded ESP outright (rhbz#2358785). Net result on aarch64: the loader
+	# looks for its config in a directory that was deliberately removed, fails
+	# to load normal.mod, and dies before drawing anything -- black screen.
+	#
+	# gcdaa64.efi is byte-for-byte the same grub except its prefix is /EFI/BOOT,
+	# which is exactly where kiwi puts the config. Overwrite the path kiwi globs
+	# so it picks that one up instead.
+	#
+	# Only affects direct UEFI boot. Ventoy never executes this binary -- it
+	# loopback-mounts the ISO and runs /boot/grub2/grub.cfg under its own grub.
+	cp -a /boot/efi/EFI/fedora/gcdaa64.efi /boot/efi/EFI/fedora/grubaa64.efi
+fi
+
+# 51-dracut-rescue.install isn't UKI-aware -- it unconditionally sed's a BLS
+# loader entry that layout=uki never creates. Mask it (kernel-install(8)'s
+# documented way to disable a plugin: a /dev/null symlink of the same name).
+mkdir -p /etc/kernel/install.d
+ln -sf /dev/null /etc/kernel/install.d/51-dracut-rescue.install
+# kernel-core's own package scriptlet already ran kernel-install once, before
+# this mask existed (root overlay lands after package install), leaving a
+# stale rescue image behind. Remove it now so kiwi's systemd_boot EFI-FAT-image
+# step doesn't try to cram it in too.
+rm -f /boot/initramfs-0-rescue-*.img /boot/loader/entries/*-0-rescue.conf
+
+# GPU/ADSP/CDSP firmware + qcom DSP/sensor share config from the device tree repo
+# (readme.md: "recursively copy the files in ./lib/ to /lib/", same for ./usr/)
+cp -a /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/lib/. /lib/
+cp -a /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/usr/. /usr/
+
+build_tmp=$(mktemp -d)
+
+# Snapshot what's installed before pulling in build-only tooling, so we can
+# remove exactly what this block adds afterward -- and nothing Kiwi's own
+# package lists (other team/desktop profiles) already wanted installed.
+pkgs_before=$(mktemp)
+rpm -qa --qf '%{NAME}\n' | sort > "$pkgs_before"
+
+# Wi-Fi (ath12k) board file fixup, adapted from dwhinham/linux-surface-pro-11
+dnf install -y python3 curl zstd
+(
+	cd "$build_tmp"
+	cp /lib/firmware/ath12k/WCN7850/hw2.0/board-2.bin* .
+	if [ -f board-2.bin.zst ]; then
+		zstd -d board-2.bin.zst
+	elif [ -f board-2.bin.xz ]; then
+	    xz -d board-2.bin.xz
+	fi
+	curl --output bdencoder.py -sL \
+	    https://raw.githubusercontent.com/qca/qca-swiss-army-knife/refs/heads/master/tools/scripts/ath12k/ath12k-bdencoder
+	python3 bdencoder.py --extract board-2.bin
+	rm -f bdencoder.py
+	mv "bus=pci,vendor=17cb,device=1107,subsystem-vendor=17cb,subsystem-device=3378,qmi-chip-id=2,qmi-board-id=255.bin" \
+	    /lib/firmware/ath12k/WCN7850/hw2.0/board.bin
+)
+
+# AudioReach topology; alsatplg (the topology *compiler*) is build-only, the
+# compiled blob is what ships. alsa-ucm-utils' UCM profiles are read at runtime
+# by the audio stack, so that one's installed separately, alongside v4l-utils below.
+dnf install -y git cmake gcc gcc-c++ make pkgconf-pkg-config alsa-topology-utils m4
+(
+	cd /tmp/linux-msm/audioreach-topology
+	git clone https://github.com/linux-msm/audioreach-topology
+	cd audioreach-topology
+	export FW_LOCATION=/lib/firmware
+	cmake .
+	make
+	make install
+)
+
+# hexagonrpc + libssc + iio-sensor-proxy (fastrpc/sensor stack); not packaged in Fedora
+dnf install -y \
+	systemd-devel libgudev-devel polkit-devel gtk3-devel python3-devel \
+	meson ninja-build gcc gcc-c++ git pkgconf-pkg-config \
+	libqmi-devel glib2-devel protobuf3-c-devel gobject-introspection-devel
+# meson's default prefix is /usr/local, and Fedora's dynamic linker does not
+# search there -- /etc/ld.so.conf.d ships only iscsi and pipewire entries. Without
+# this, libhexagonrpc.so installs fine but ld.so can't find it, and hexagonrpcd
+# dies at startup with "no libhexagonrpc.so" (which then takes iio-sensor-proxy
+# down with it via Requires=). Cover both libdir spellings.
+printf '/usr/local/lib\n/usr/local/lib64\n' > /etc/ld.so.conf.d/surface-pro-12-inch.conf
+(
+	cd /tmp/harrisonvanderbyl/hexagonrpc
+	meson setup build
+	ninja -C build
+	ninja -C build install
+	ldconfig
+)
+(
+	cd /tmp/DylanVanAssche/libssc
+	meson setup _build
+	meson compile -C _build
+	meson install -C _build
+	ldconfig
+)
+(
+	cd /tmp/harrisonvanderbyl/iio-sensor-proxy
+	meson _build -Dssc-support=enabled -Dprefix=/usr
+	ninja -v -C _build install
+)
+
+# Remove exactly what got newly installed since the snapshot above (compilers,
+# -devel headers, alsatplg, and whatever they pulled in transitively). Anything
+# that was already installed before -- because some other team/desktop profile
+# in this same build wanted it, or it's part of the base image -- is left alone.
+pkgs_new=$(comm -13 "$pkgs_before" <(rpm -qa --qf '%{NAME}\n' | sort))
+if [ -n "$pkgs_new" ]; then
+	dnf remove -y $pkgs_new
+fi
+rm -f "$pkgs_before"
+
+# UCM profiles read at runtime by the audio stack
+dnf install -y alsa-ucm-utils
+
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/hexagonrpc.service \
+	/etc/systemd/system/hexagonrpc.service
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/iio-sensor-proxy.service \
+	/etc/systemd/system/iio-sensor-proxy.service
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/udev/rules.d/61-sensors-surface-pro-12-inch.rules \
+	/etc/udev/rules.d/61-sensors-surface-pro-12-inch.rules
+systemctl enable hexagonrpc.service iio-sensor-proxy.service
+
+# Rear camera pipeline (msm/camss) needs /dev/media0, which only exists once the
+# real silicon probes on the booted system -- install the wiring but do not run
+# it here, there is no camera hardware in the KIWI build chroot.
+dnf install -y v4l-utils
+install -Dm755 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/usr/local/bin/wireupcameras.sh \
+    /usr/local/bin/wireupcameras.sh
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/wireupcameras.service \
+	/etc/systemd/system/wireupcameras.service
+systemctl enable wireupcameras.service
+
+restorecon -Rv /usr /lib /etc/systemd/system /etc/udev/rules.d
+
+#======================================
 # Set the WSL name for ELN
 #--------------------------------------
 if [[ "$kiwi_profiles" == *"WSL"* ]] && [[ "$kiwi_iname" == *"ELN"* ]]; then
@@ -539,5 +737,7 @@ if [[ "$kiwi_profiles" == *"FEX"* ]]; then
 	# Do this last for obvious reasons.
 	rm /usr/bin/rm
 fi
+
+rm -rf /tmp/*
 
 exit 0

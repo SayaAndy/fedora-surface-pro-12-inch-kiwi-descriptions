@@ -1,0 +1,20 @@
+[submodule "root/tmp/harrisonvanderbyl/surface-pro-12-inch-linux"]
+	path = root/tmp/harrisonvanderbyl/surface-pro-12-inch-linux
+	url = https://github.com/harrisonvanderbyl/surface-pro-12-inch-linux.git
+	branch = main
+[submodule "root/tmp/harrisonvanderbyl/hexagonrpc"]
+	path = root/tmp/harrisonvanderbyl/hexagonrpc
+	url = https://github.com/harrisonvanderbyl/hexagonrpc
+	branch = main
+[submodule "root/tmp/DylanVanAssche/libssc"]
+	path = root/tmp/DylanVanAssche/libssc
+	url = https://codeberg.org/DylanVanAssche/libssc
+	branch = main
+[submodule "root/tmp/harrisonvanderbyl/iio-sensor-proxy"]
+	path = root/tmp/harrisonvanderbyl/iio-sensor-proxy
+	url = https://github.com/harrisonvanderbyl/iio-sensor-proxy
+	branch = master
+[submodule "root/tmp/linux-msm/audioreach-topology"]
+	path = root/tmp/linux-msm/audioreach-topology
+	url = https://github.com/linux-msm/audioreach-topology
+	branch = main
