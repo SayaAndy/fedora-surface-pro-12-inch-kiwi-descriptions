@@ -30,12 +30,13 @@ To build this on Fedora Linux:
 
 ## What is left out (for now)
 
-* Live CD has to run in RAM, so `rd.live.ram=1` is set for cmdline. Otherwise, at least on my ancient flash drive, it fails to load multiple necessary services, including `polkit`.
+* Live CD has to run in RAM, so `rd.live.ram=1` is set for cmdline. Otherwise, at least on my ancient flash drive, it fails to load multiple necessary services, including `polkit`. So, ~5 minutes of loading on USB 2 drive, while screen is not backlit, is to be expected.
 * No rescue vmlinuz.
 * No secure boot possible for this ISO for now, as the platform used is `efi` and not `uefi`.
-* No GRUB auto hidden menu. Trying to have the menu hidden results in system leads to restart after trying to boot it.
+* No GRUB auto hidden menu. Trying to have the menu hidden results in system restarting after trying to boot it.
 * `wireupcameras.service` (which enables tablet's cameras to be used) fails on installed system (not in Live CD though), as no `/dev/media*` gets initialized.
-* No hardware video decoding for now, as the iris video codec (`qcvss8380_pa.mbn`) is Windows-only (as far as I researched), but you can copy one to `/lib/firmware/qcom/x1p42100/Microsoft/Surface12/`, if you have Windows ARM64 partition.
+* No hardware video decoding for now, as the iris video codec (`qcvss8380_pa.mbn`) is Windows-only (as far as I researched), but you can copy one to `/lib/firmware/qcom/x1p42100/Microsoft/Surface12/`, if you have Windows ARM64 upartition.
+* Suspend on Snapdragon X is still very unstable. No deep sleep is available, so `mem_sleep_default=s2idle` was set. Even that leads to compromises as suspending via GNOME results in hard freeze, so the default power button behavior was changed to `interactive` and should not be changed back to `suspend`.
 
 ## Image variants
 

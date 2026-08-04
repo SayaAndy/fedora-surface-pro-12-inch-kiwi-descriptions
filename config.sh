@@ -620,7 +620,23 @@ install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system
 	/etc/systemd/system/wireupcameras.service
 systemctl enable wireupcameras.service
 
-restorecon -Rv /usr /lib /etc/systemd/system /etc/udev/rules.d
+# Suspend on Snapdragon is still very unstable. This is the reason why
+# 'mem_sleep_default=s2idle' is set explicitly in the cmdline as 'deep' mode
+# does not function at all.
+# Even then, suspending via gnome settings daemon results in hard freeze.
+# This is why:
+#   logind behavior is kept intact with suspend behavior.
+#   gnome default power button behavior was replaced with 'interactive'.
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/logind.conf.d/60-surface-power-key.conf \
+	/etc/systemd/login.conf.d/60-surface-power-key.conf
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/db/local.d/00-power-button \
+	/etc/dconf/db/local.d/00-power-button
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/profile/user \
+	/etc/dconf/profile/user
+
+dconf update
+
+restorecon -Rv /usr /lib /etc/systemd /etc/dconf /etc/udev/rules.d
 
 #======================================
 # Set the WSL name for ELN

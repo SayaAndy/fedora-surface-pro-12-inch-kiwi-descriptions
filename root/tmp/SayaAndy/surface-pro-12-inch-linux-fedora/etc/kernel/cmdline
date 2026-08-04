@@ -1,1 +1,1 @@
-rootflags=subvol=root clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 rhgb quiet
+rootflags=subvol=root mem_sleep_default=s2idle clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 rhgb quiet
