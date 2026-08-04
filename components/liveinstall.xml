@@ -10,7 +10,7 @@
 			publisher="Fedora Project" volid="Fedora_Linux" application_id="Fedora_Linux"
 			primary="true" flags="dmsquash" filesystem="erofs" erofscompression="lzma,level=6" mediacheck="true"
 			firmware="efi" efiparttable="gpt" efifatimagesize="30"
-			kernelcmdline="quiet rhgb clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 rd.live.ram=1"
+			kernelcmdline="quiet rhgb mem_sleep_default=s2idle clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 rd.live.ram=1"
 			fscreateoptions="-Efragments -C 1048576"
 			>
 			<bootloader name="grub2" grub_template="grub-arm.cfg.iso-template" console="console" timeout="10"/>
