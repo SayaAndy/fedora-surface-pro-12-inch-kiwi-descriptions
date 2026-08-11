@@ -260,7 +260,7 @@ if [[ "$kiwi_profiles" == *"Container"* ]] || [[ "$kiwi_profiles" == *"FEX"* ]];
 		releasever=eln
 	fi
 
-	rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-primary
+	rpm --import /usr/share/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-primary
 
 	echo "# fstab intentionally empty for containers" > /etc/fstab
 
