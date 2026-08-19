@@ -1,6 +1,8 @@
 
 # Fedora KIWI image descriptions, modified to build & launch for Surface Pro 12" Gen 1
 
+![Fedora Workstation Rawhide running on Surface Pro 12"](docs/FedoraOnSurface.jpg)
+
 It is the fork of the original [KIWI image descriptions](https://forge.fedoraproject.org/releng/kiwi-descriptions), modified for launching Fedora Linux Rawhide Live ISO on Surface Pro 12" Gen 1 (and further installing it on the device).
 
 I bought this device as I viewed it as a great Linux GNOME tablet, but after several days, many hours of work of trying to do so, I must say that installing a distribution here (and then having it work fine) is a huge pain in the ass.
@@ -24,7 +26,7 @@ To build this on Fedora Linux:
 []$ sudo dnf --assumeyes install kiwi kiwi-systemdeps distribution-gpg-keys
 # Run the image build
 []$ sudo ./kiwi-build --kiwi-file=Fedora.kiwi --image-type=<image_type> --image-profile=<image_profile> --output-dir ./outdir
-# An example for Workstation Live CD ISO
+# An example for Workstation Live CD ISO, takes around 16 minutes
 []$ sudo ./kiwi-build --kiwi-file=Fedora.kiwi --image-type=iso --image-profile=Workstation-Live --output-dir ./outdir
 ```
 
@@ -35,7 +37,7 @@ To build this on Fedora Linux:
 * No secure boot possible for this ISO for now, as the platform used is `efi` and not `uefi`.
 * No GRUB auto hidden menu. Trying to have the menu hidden results in system restarting after trying to boot it.
 * `wireupcameras.service` (which enables tablet's cameras to be used) fails on installed system (not in Live CD though), as no `/dev/media*` gets initialized.
-* No hardware video decoding for now, as the iris video codec (`qcvss8380_pa.mbn`) is Windows-only (as far as I researched), but you can copy one to `/lib/firmware/qcom/x1p42100/Microsoft/Surface12/`, if you have Windows ARM64 upartition.
+* No hardware video encoding/decoding for now, as the iris video codec (`qcvss8380_pa.mbn`) is Windows-only (as far as I researched), but you can copy one from `/path/to/mounted/windows/drive/Windows/System32/DriverStore/FileRepository/qcdx8380.inf_arm64_*/qcvss8380_pa.mbn` to `/lib/firmware/qcom/x1p42100/Microsoft/Surface12/`, if you keep Windows ARM64 partition.
 * Suspend on Snapdragon X is still very unstable. No deep sleep is available, so `mem_sleep_default=s2idle` was set. Even that leads to compromises as suspending via GNOME results in hard freeze, so the default power button behavior was changed to `interactive` and should not be changed back to `suspend`.
 
 ## Image variants

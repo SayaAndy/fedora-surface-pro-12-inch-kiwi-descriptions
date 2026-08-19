@@ -1,8 +1,5 @@
 [Unit]
 Description=Wire up Surface Pro rear camera (media-ctl pipeline)
-After=dev-media0.device
-Wants=dev-media0.device
-DefaultDependencies=no
 
 [Service]
 Type=oneshot
