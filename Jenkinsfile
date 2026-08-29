@@ -49,7 +49,7 @@ spec:
                     script {
                         try {
                             sh '''
-                                dnf --assumeyes install kiwi kiwi-systemdeps distribution-gpg-keys
+                                dnf --assumeyes install git kiwi kiwi-systemdeps distribution-gpg-keys
                                 git submodule update --init --recursive
 
                                 ./kiwi-build \\
