@@ -50,6 +50,7 @@ spec:
                         try {
                             sh '''
                                 dnf --assumeyes install git kiwi kiwi-systemdeps distribution-gpg-keys
+                                git config --global --add safe.directory .
                                 git submodule update --init --recursive
 
                                 ./kiwi-build \\
