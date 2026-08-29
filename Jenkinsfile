@@ -32,6 +32,8 @@ spec:
       command: [ 'sleep' ]
       args: [ 'infinity' ]
       tty: true
+      securityContext:
+        privileged: true
       resources:
         requests:
           cpu: "2"
