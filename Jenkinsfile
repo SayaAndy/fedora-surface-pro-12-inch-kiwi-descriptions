@@ -9,11 +9,12 @@ pipeline {
         KIWI_FILE = 'Fedora.kiwi'
         IMAGE_TYPE = 'iso'
         IMAGE_PROFILE = 'Workstation-Live'
+        IMAGE_VERSION = '45'
         OUTPUT_DIR = 'outdir'
     }
 
     stages {
-        stage('Build Fedora Workstation (ARM64)') {
+        stage('Build Fedora Workstation Live ISO (ARM64)') {
             agent {
                 kubernetes {
                     defaultContainer 'kiwi'
@@ -69,6 +70,44 @@ spec:
                             throw e
                         }
                     }
+                    stash name: "fedora-workstation-live-iso-stash", includes: "${OUTPUT_DIR}-build/Fedora.aarch64-${IMAGE_VERSION}.iso"
+                }
+            }
+        }
+
+        stage('Push Fedora Workstation Live ISO (ARM64)') {
+            agent {
+                kubernetes {
+                    defaultContainer 's5cmd'
+                    yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: jenkins
+spec:
+  containers:
+    - name: s5cmd
+      image: peakcom/s5cmd:v2.3.0
+      imagePullPolicy: IfNotPresent
+      command: [ 'sleep' ]
+      args: [ 'infinity' ]
+      tty: true
+      resources:
+        requests:
+          cpu: "0.5"
+          memory: 4Gi
+"""
+                }
+            }
+            steps {
+                container('s5cmd') {
+                    unstash "fedora-workstation-live-iso-stash"
+                    sh '''
+                        cd ${OUTPUT_DIR}-build
+                        moddate=$(date -r Fedora.aarch64-${IMAGE_VERSION}.iso -u +"%Y%m%d-%H%M%S")
+                        mv Fedora.aarch64-${IMAGE_VERSION}.iso "Fedora.Surface-Pro-12in.${IMAGE_PROFILE}.${IMAGE_VERSION}.${moddate}.aarch64.iso"
+                        ls -lh
+                    '''
                 }
             }
         }
