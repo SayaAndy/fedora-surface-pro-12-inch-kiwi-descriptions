@@ -1,6 +1,5 @@
 [Unit]
 Description=HexagonRPC Service
-After=network.target
 
 [Service]
 ExecStart=/usr/local/bin/hexagonrpcd -f /dev/fastrpc-adsp-secure -s

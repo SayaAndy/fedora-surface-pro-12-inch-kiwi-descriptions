@@ -26,19 +26,24 @@ set timeout_style=${boot_timeout_style}
 
 search ${search_params}
 
+# Surface Pro 12" (Snapdragon X1P-42-100): the dtb the entries below load is a
+# plain file in this same loader directory on the ISO9660 filesystem. GRUB
+# cannot read the erofs root image, and kiwi has no device tree support, so
+# surface-editbootconfig.sh copies it there out of the kernel-surface RPM in the
+# image root. See that script for why editbootconfig is the hook that can.
 menuentry "Start ${title}" --class fedora --class gnu-linux --class gnu --class os {
-	devicetree ($$root)${bootpath}/x1p42100-microsoft-surface-pro-12-inch.dtb
+	devicetree ($$root)${bootpath}/x1p42100-microsoft-sp12in.dtb
 	linux ($$root)${bootpath}/${kernel_file} ${boot_options}
 	initrd ($$root)${bootpath}/${initrd_file}
 }
 menuentry "Test this media & start ${title}" --class fedora --class gnu-linux --class gnu --class os {
-	devicetree ($$root)${bootpath}/x1p42100-microsoft-surface-pro-12-inch.dtb
+	devicetree ($$root)${bootpath}/x1p42100-microsoft-sp12in.dtb
 	linux ($$root)${bootpath}/${kernel_file} ${boot_options} rd.live.check
 	initrd ($$root)${bootpath}/${initrd_file}
 }
 submenu "Troubleshooting -->" {
 	menuentry "Start ${title} in basic graphics mode" --class fedora --class gnu-linux --class gnu --class os {
-		devicetree ($$root)${bootpath}/x1p42100-microsoft-surface-pro-12-inch.dtb
+		devicetree ($$root)${bootpath}/x1p42100-microsoft-sp12in.dtb
 		linux ($$root)${bootpath}/${kernel_file} ${boot_options} $${basicgfx}
 		initrd ($$root)${bootpath}/${initrd_file}
 	}

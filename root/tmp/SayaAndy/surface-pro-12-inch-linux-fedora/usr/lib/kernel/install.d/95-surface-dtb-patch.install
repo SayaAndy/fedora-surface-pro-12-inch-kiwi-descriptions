@@ -29,15 +29,16 @@ KVER="${2:-}"
 [ "$COMMAND" = "add" ] || exit 0
 [ -n "$KVER" ] || exit 0
 
-DTB_NAME=x1p42100-microsoft-surface-pro-12-inch.dtb
+DTB_NAME=x1p42100-microsoft-sp12in.dtb
 DTB_REL="qcom/$DTB_NAME"
 BOOT_ROOT="${KERNEL_INSTALL_BOOT_ROOT:-/boot}"
 
 # 60-surface-dtb.install stages the dtb into this kernel's module tree; fall
-# back to the master copy if it has not run (or was removed).
+# back to kernel-surface's version-independent master copy if it has not run
+# (or was removed).
 DTB_SRC="/usr/lib/modules/${KVER}/dtb/${DTB_REL}"
 if [ ! -f "$DTB_SRC" ]; then
-	DTB_SRC="/etc/surface-dtb/$DTB_NAME"
+	DTB_SRC="/usr/lib/surface-dtb/$DTB_NAME"
 fi
 [ -f "$DTB_SRC" ] || exit 0
 

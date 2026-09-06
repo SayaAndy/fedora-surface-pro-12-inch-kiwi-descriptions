@@ -58,7 +58,7 @@ if [[ "$kiwi_profiles" != *"Container"* ]] && [[ "$kiwi_profiles" != *"FEX"* ]] 
 	## "devicetree /dtb-$kver/$GRUB_DEVICETREE". /etc/kernel/devicetree does
 	## nothing here: /boot/<machine-id> does not exist, so kernel-install runs
 	## with layout=other and 90-loaderentry.install (which would read it) bails.
-	echo "GRUB_DEVICETREE=qcom/x1p42100-microsoft-surface-pro-12-inch.dtb" >> /etc/default/grub
+	echo "GRUB_DEVICETREE=qcom/x1p42100-microsoft-sp12in.dtb" >> /etc/default/grub
 	## Upstream sets menu_auto_hide=1 + boot_indeterminate=1 here for Disk images
 	## to match anaconda's behaviour. Deliberately not done for Surface Pro 12":
 	## with the menu hidden, GRUB counts down GRUB_TIMEOUT against a blank screen
@@ -461,18 +461,39 @@ fi
 # Surface Pro 12" customizations
 #--------------------------------------
 
-# /etc/surface-dtb is the master copy 60-surface-dtb.install re-stages into each
-# new kernel's module tree on update. The other two are what that hook and
-# 10-devicetree.install would normally produce, done up front here because
-# kernel-install never runs during this build -- without the module-tree copy,
-# anything keyed off /usr/lib/modules/$kver/dtb (including the anaconda
-# post-script) finds nothing and silently does nothing.
-install -Dm644 /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/boot/dtb \
-	"/etc/surface-dtb/x1p42100-microsoft-surface-pro-12-inch.dtb"
-install -Dm644 /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/boot/dtb \
-	"/usr/lib/modules/$kver/dtb/qcom/x1p42100-microsoft-surface-pro-12-inch.dtb"
-install -Dm644 /tmp/harrisonvanderbyl/surface-pro-12-inch-linux/boot/dtb \
-	"/boot/dtb-$kver/qcom/x1p42100-microsoft-surface-pro-12-inch.dtb"
+# Device tree. kernel-surface compiles the patched dts in-tree and installs the
+# result twice: into its own module tree (dtb/qcom, from dtbs_install) and
+# version-independently into /usr/lib/surface-dtb. The latter is the master copy
+# 60-surface-dtb.install re-stages into each new kernel's module tree on update,
+# which is the only reason the image no longer carries a prebuilt blob of its
+# own -- the description installs kernel-surface by name and <ignore>s Fedora's
+# kernel packages, so the package is always there.
+#
+# One name throughout, upstream's: this block, GRUB_DEVICETREE above, both
+# kernel-install plugins, /etc/kernel/devicetree, and the ISO grub template.
+#
+# The module-tree and /boot copies plus the /boot/dtb symlink are what that hook
+# and grubby's 10-devicetree.install would normally produce, done up front here
+# because kernel-install does not run again during this build -- without the
+# module-tree copy, anything keyed off /usr/lib/modules/$kver/dtb (including the
+# anaconda post-script) finds nothing and silently does nothing.
+dtb_name=x1p42100-microsoft-sp12in.dtb
+dtb_src="/usr/lib/surface-dtb/$dtb_name"
+if [[ ! -f "$dtb_src" ]]; then
+	printf 'Error: %s is missing, so kernel-surface (built from ../kernel-surface) is not installed.\n' "$dtb_src" >&2
+	exit 1
+fi
+install -Dm644 "$dtb_src" "/usr/lib/modules/$kver/dtb/qcom/$dtb_name"
+install -Dm644 "$dtb_src" "/boot/dtb-$kver/qcom/$dtb_name"
+# dtbs_install ships every arm64 device tree, ~1000 boards, and the module tree
+# goes straight into the image filesystem. This image targets exactly one board,
+# so drop the rest -- the same objection that rules out kernel-uki-dtbloader in
+# components/boot.xml. Only affects the image; a later kernel-surface update on
+# the installed system restores the full tree.
+find "/usr/lib/modules/$kver/dtb" -mindepth 1 \
+	\! -path "/usr/lib/modules/$kver/dtb/qcom" \
+	\! -name "$dtb_name" \
+	-delete
 # /boot/dtb -> dtb-$kver is what grubby's 10-devicetree.install maintains, and
 # what the boot loader entry's devicetree path resolves through
 ln -sfn "dtb-$kver" /boot/dtb
@@ -532,7 +553,7 @@ fi
 # documented way to disable a plugin: a /dev/null symlink of the same name).
 mkdir -p /etc/kernel/install.d
 ln -sf /dev/null /etc/kernel/install.d/51-dracut-rescue.install
-# kernel-core's own package scriptlet already ran kernel-install once, before
+# kernel-surface's %posttrans scriptlet already ran kernel-install once, before
 # this mask existed (root overlay lands after package install), leaving a
 # stale rescue image behind. Remove it now so kiwi's systemd_boot EFI-FAT-image
 # step doesn't try to cram it in too.
@@ -629,11 +650,18 @@ dnf install -y alsa-ucm-utils
 
 install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/hexagonrpc.service \
 	/etc/systemd/system/hexagonrpc.service
-install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/iio-sensor-proxy.service \
-	/etc/systemd/system/iio-sensor-proxy.service
-install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/udev/rules.d/61-sensors-surface-pro-12-inch.rules \
-	/etc/udev/rules.d/61-sensors-surface-pro-12-inch.rules
-systemctl enable hexagonrpc.service iio-sensor-proxy.service
+
+# iio-sensor-proxy keeps the unit its own build installed, and gets only the
+# ordering against hexagonrpcd added on top. The drop-in is dead weight if that
+# unit is not there, so check rather than let it pass silently.
+test -f /usr/lib/systemd/system/iio-sensor-proxy.service
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/iio-sensor-proxy.service.d/60-surface-pro-12-inch.conf \
+	/etc/systemd/system/iio-sensor-proxy.service.d/60-surface-pro-12-inch.conf
+
+# Only hexagonrpcd is enabled statically. iio-sensor-proxy is started through
+# its D-Bus name by whatever asks for net.hadess.SensorProxy, which then pulls
+# hexagonrpc.service in through the drop-in above.
+systemctl enable hexagonrpc.service
 
 # Rear camera pipeline (msm/camss) needs /dev/media0, which only exists once the
 # real silicon probes on the booted system -- install the wiring but do not run
