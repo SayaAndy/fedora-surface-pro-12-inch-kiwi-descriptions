@@ -1,0 +1,31 @@
+<image>
+	<!-- Surface Pro 12" (Snapdragon X1P-42-100): the patched kernel.
+	     Built from the sibling ../kernel-surface checkout (see that directory's
+	     README.md). components/boot.xml installs kernel-surface by name and
+	     ignores Fedora's kernel packages, so this repository is not optional:
+	     without it the image cannot depsolve at all.
+
+	     priority="1" beats the fedora/updates repositories, which carry no
+	     priority and therefore sit at dnf's default 99 (lower number wins).
+
+	     A local directory repository, which is what a plain `createrepo_c` over
+	     a directory of RPMs produces. In CI the Jenkinsfile fills it from the
+	     dist-sayagit-fedora-rpm B2 bucket that the kernel-surface pipeline
+	     publishes to, then runs createrepo_c, all before kiwi starts. The
+	     bucket stays private, so the RPM is pulled with credentials instead of
+	     this description pointing at a public URL. By hand:
+
+	         sudo mkdir -p /var/lib/kernel-surface-repo
+	         sudo cp ~/rpmbuild/RPMS/aarch64/kernel-surface-*.rpm \
+	             /var/lib/kernel-surface-repo/
+	         sudo createrepo_c /var/lib/kernel-surface-repo
+
+	     The path has to exist on the build host before kiwi starts; kiwi binds
+	     a dir:// repository into the image root at the same path. It has no
+	     <signing> element, so kiwi configures it with gpgcheck off. Changing
+	     the path here means changing KERNEL_SURFACE_REPO in the Jenkinsfile
+	     too. -->
+	<repository type="rpm-md" alias="kernel-surface" priority="1">
+		<source path="dir:///var/lib/kernel-surface-repo"/>
+	</repository>
+</image>

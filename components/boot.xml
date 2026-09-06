@@ -42,17 +42,44 @@
 		<package name="systemd-oomd-defaults"/>
 		<package name="systemd-resolved"/>
 	</packages>
-	<packages type="image" patternType="plusRecommended" profiles="BootCore">
+	<!-- Surface Pro 12" (Snapdragon X1P-42-100) kernel selection. One block for
+	     every profile that needs a kernel: BootCore, BootCoreLive, and
+	     BootDiskCore through its <requires profile="BootCore"/> above.
+
+	     kernel-surface is vanilla upstream plus the miasvanklei overlay's patch
+	     set for this board (device tree, SAM RTC, SAM suspend workaround,
+	     CAMSS/CSI-2, remoteproc attach, clk/PCI/irqchip fixes). It is built from
+	     the sibling ../kernel-surface checkout and comes from the repository
+	     repositories/kernel-surface.xml adds.
+
+	     It is a single package (kernel image, every module, device trees) and
+	     Provides kernel, kernel-core, kernel-modules, kernel-modules-core and
+	     kernel-modules-extra, so anything with a plain Requires on one of those
+	     resolves against it. That is why no -modules/-modules-extra entry is
+	     needed in any profile any more.
+
+	     Fedora's split kernel packages are ignored by name instead, so dnf can
+	     never drag one in as a dependency. kernel-uki-dtbloader is ignored as
+	     well: kernel-surface Conflicts it, so without the exclusion any package
+	     pulling it in would fail the depsolve instead of just losing it. It
+	     bakes in ~3000 boards' dtbs (.dtbauto sections), does not carry this
+	     board, and is a hard Requires of the plain "kernel" metapackage on
+	     aarch64, which makes that metapackage uninstallable here too, since it
+	     is also the only thing that could satisfy kernel-core by name.
+
+	     Consequence for the profiles this fork does not target: the ones that
+	     still ask for a Fedora kernel by name through BootCore, namely
+	     Server-Host-Generic (kernel) and Cloud-Base-Azure (kernel-modules),
+	     cannot depsolve. Everything this device builds (Live via BootCoreLive,
+	     disk via BootDiskCore) takes its kernel from here. -->
+	<packages type="image" patternType="plusRecommended" profiles="BootCore,BootCoreLive">
 		<ignore name="kernel-*debug*"/>
-		<package name="kernel-core"/>
-	</packages>
-	<packages type="image" patternType="plusRecommended" profiles="BootCoreLive">
-		<ignore name="kernel-*debug*"/>
-		<!-- Surface Pro 12": kernel-uki-dtbloader bakes in ~3000 boards' dtbs
-		     (.dtbauto sections) and hard-conflicts with kernel-core. This board
-		     isn't in its dtb database anyway (dtb delivered separately via
-		     grub's devicetree directive), so plain kernel-core is enough. -->
-		<package name="kernel-core"/>
+		<ignore name="kernel-core"/>
+		<ignore name="kernel-modules"/>
+		<ignore name="kernel-modules-core"/>
+		<ignore name="kernel-modules-extra"/>
+		<ignore name="kernel-uki-dtbloader"/>
+		<package name="kernel-surface"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="BootCoreUKI">
 		<package name="shim-signed-aa64"/>
@@ -66,16 +93,12 @@
 		<package name="grub2-efi-aa64-cdboot"/>
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="BootDiskCore">
-		<ignore name="kernel-*debug*"/>
 		<package name="glibc-all-langpacks"/>
-		<!-- Surface Pro 12": kernel-core, not kernel-uki-dtbloader's multi-board
-		     dtb bloat, same reasoning as BootCoreLive above. arm-image-installer
-		     and uboot-images-armv8 dropped too, they exist for flashing/booting
-		     other ARM SBCs (device-tree selection, U-Boot), not relevant to this
+		<!-- Surface Pro 12": the kernel comes from the shared BootCore block
+		     above, which this profile requires. arm-image-installer and
+		     uboot-images-armv8 dropped, they exist for flashing/booting other
+		     ARM SBCs (device-tree selection, U-Boot), not relevant to this
 		     single UEFI/GPT device. -->
-		<package name="kernel-core"/>
-		<package name="kernel-modules"/>
-		<package name="kernel-modules-extra"/>
 		<package name="btrfs-progs"/>
 		<package name="udisks2-btrfs"/>
 	</packages>

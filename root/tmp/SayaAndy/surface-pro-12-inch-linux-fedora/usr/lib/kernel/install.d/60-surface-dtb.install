@@ -5,11 +5,28 @@ umask 022
 COMMAND="$1"
 KVER="$2"
 
-SRC="/etc/surface-dtb/x1p42100-microsoft-surface-pro-12-inch.dtb"
-DEST="/usr/lib/modules/${KVER}/dtb/qcom/x1p42100-microsoft-surface-pro-12-inch.dtb"
+DTB_NAME=x1p42100-microsoft-sp12in.dtb
+DEST="/usr/lib/modules/${KVER}/dtb/qcom/${DTB_NAME}"
+
+# The master copy comes from kernel-surface: it builds the dtb in-tree from the
+# patched dts and installs it under /usr/lib/surface-dtb, deliberately outside
+# any /usr/lib/modules/<kver>, so it can be re-staged into any kernel installed
+# alongside it.
+SRC="/usr/lib/surface-dtb/${DTB_NAME}"
+[ -f "${SRC}" ] || SRC=""
 
 case "${COMMAND}" in
 	add)
+		# No master and no dtb already in this kernel's tree means there is
+		# nothing this board can boot with, so say so rather than failing
+		# silently three steps later in the boot loader.
+		if [ -z "${SRC}" ]; then
+			if [ -f "${DEST}" ]; then
+				exit 0
+			fi
+			echo "60-surface-dtb: no ${DTB_NAME} in /usr/lib/surface-dtb" >&2
+			exit 1
+		fi
 		mkdir -p "$(dirname ${DEST})"
 		cp -f "${SRC}" "${DEST}"
 		chmod 644 "${DEST}"
