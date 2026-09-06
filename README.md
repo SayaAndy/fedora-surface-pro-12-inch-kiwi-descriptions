@@ -36,8 +36,7 @@ To build this on Fedora Linux:
 * No rescue vmlinuz.
 * No secure boot possible for this ISO for now, as the platform used is `efi` and not `uefi`.
 * No GRUB auto hidden menu. Trying to have the menu hidden results in system restarting after trying to boot it.
-* `wireupcameras.service` (which enables tablet's cameras to be used) fails on installed system (not in Live CD though), as no `/dev/media*` gets initialized.
-* No hardware video encoding/decoding for now, as the iris video codec (`qcvss8380_pa.mbn`) is Windows-only (as far as I researched), but you can copy one from `/path/to/mounted/windows/drive/Windows/System32/DriverStore/FileRepository/qcdx8380.inf_arm64_*/qcvss8380_pa.mbn` to `/lib/firmware/qcom/x1p42100/Microsoft/Surface12/`, if you keep Windows ARM64 partition.
+* Hardware video encoding/decoding needs a firmware blob the image cannot ship. The `qcom/vpu/vpu30_p1_s7.mbn` that `linux-firmware` provides is signed with Qualcomm's SecTools *test* key chain, which a retail Surface's TrustZone rejects -- `qcom_scm_pas_init_image()` fails and the kernel logs `qcom-iris aa00000.video-codec: error -22 initializing firmware`. The production-signed build of the same firmware ships with Windows, so if you kept the Windows ARM64 partition, copy `qcvss8380_pa.mbn` out of `/path/to/mounted/windows/drive/Windows/System32/DriverStore/FileRepository/qcdx8380.inf_arm64_*/` into `/lib/firmware/qcom/x1p42100/Microsoft/Surface12/`. The kernel's device tree already points `iris` at that path.
 * Suspend on Snapdragon X is still very unstable. No deep sleep is available, so `mem_sleep_default=s2idle` was set. Even that leads to compromises as suspending via GNOME results in hard freeze, so the default power button behavior was changed to `interactive` and should not be changed back to `suspend`.
 
 ## Image variants

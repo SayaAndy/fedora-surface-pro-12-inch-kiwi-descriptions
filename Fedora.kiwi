@@ -15,7 +15,7 @@
 		<release-version>45</release-version>
 	</preferences>
 	<include from="this://./repositories/core.xml"/>
-	<include from="this://./repositories/kernel-surface.xml"/>
+	<include from="this://./repositories/kernel-sp12in.xml"/>
 	<include from="this://./components/common.xml"/>
 	<include from="this://./components/boot.xml"/>
 	<include from="this://./components/desktops/common.xml"/>
