@@ -14,17 +14,16 @@ pipeline {
 
         B2_ENDPOINT = 'https://s3.eu-central-003.backblazeb2.com'
         AWS_DEFAULT_REGION = 'eu-central-003'
-        RPM_BUCKET = 'dist-sayagit-fedora-rpm'
         ISO_BUCKET = 'dist-sayagit-fedora-iso'
+
+        // Must match the <source path="..."/> in
+        // repositories/kernel-surface.xml.
+        KERNEL_SURFACE_REPO_URL = 'https://rpm.sayag.it/kernel-sp12in/fedora/45/aarch64'
 
         // awscli2 sends CRC32 checksums by default, which B2 rejects. Ask for
         // them only where the S3 API requires them.
         AWS_REQUEST_CHECKSUM_CALCULATION = 'when_required'
         AWS_RESPONSE_CHECKSUM_VALIDATION = 'when_required'
-
-        // Must match the <source path="dir://..."/> in
-        // repositories/kernel-surface.xml.
-        KERNEL_SURFACE_REPO = '/var/lib/kernel-surface-repo'
     }
 
     stages {
@@ -68,37 +67,23 @@ spec:
                             // The kernel-surface RPM is a build input, not
                             // something this repository can produce: the image
                             // installs kernel-surface by name and <ignore>s
-                            // Fedora's kernel packages, so it has to be in the
-                            // local repository before kiwi starts. The buckets
-                            // stay private, so it is pulled with credentials
-                            // rather than fetched over a public URL.
-                            withCredentials([usernamePassword(
-                                credentialsId: 'backblaze-b2-dist-rpm',
-                                usernameVariable: 'AWS_ACCESS_KEY_ID',
-                                passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                                sh '''
-                                    set -eux
+                            // Fedora's kernel packages. Its pipeline publishes
+                            // it to rpm.sayag.it, which repositories/kernel-surface.xml
+                            // points at directly, so there is nothing to stage
+                            // here. Fail now rather than several minutes into
+                            // kiwi on an unresolvable package name.
+                            sh '''
+                                set -eux
 
-                                    dnf --assumeyes install awscli2 createrepo_c
+                                dnf --assumeyes install curl
 
-                                    mkdir -p "${KERNEL_SURFACE_REPO}"
-                                    aws s3 sync --endpoint-url "${B2_ENDPOINT}" \\
-                                        "s3://${RPM_BUCKET}/fedora/${IMAGE_VERSION}/aarch64/" \\
-                                        "${KERNEL_SURFACE_REPO}/" \\
-                                        --exclude '*' --include 'kernel-surface-*.rpm'
-
-                                    # Say so here rather than letting kiwi fail
-                                    # several minutes later on an unresolvable
-                                    # package name.
-                                    if ! ls "${KERNEL_SURFACE_REPO}"/kernel-surface-*.rpm; then
-                                        echo "No kernel-surface RPM in ${RPM_BUCKET} for Fedora ${IMAGE_VERSION}." >&2
-                                        echo "Run the kernel-surface pipeline first." >&2
-                                        exit 1
-                                    fi
-
-                                    createrepo_c "${KERNEL_SURFACE_REPO}"
-                                '''
-                            }
+                                repomd="${KERNEL_SURFACE_REPO_URL}/repodata/repomd.xml"
+                                if ! curl -fsS --retry 3 -o /dev/null "${repomd}"; then
+                                    echo "No kernel-surface repository at ${repomd}." >&2
+                                    echo "Run the kernel-surface pipeline for Fedora ${IMAGE_VERSION} first." >&2
+                                    exit 1
+                                fi
+                            '''
 
                             sh '''
                                 dnf --assumeyes install git kiwi kiwi-systemdeps distribution-gpg-keys

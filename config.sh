@@ -638,15 +638,37 @@ install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system
 # hexagonrpc.service in through the drop-in above.
 systemctl enable hexagonrpc.service
 
-# Rear camera pipeline (msm/camss) needs /dev/media0, which only exists once the
-# real silicon probes on the booted system -- install the wiring but do not run
-# it here, there is no camera hardware in the KIWI build chroot.
+# Cameras (msm/camss). Nothing has to be wired up at boot. libcamera's "simple"
+# pipeline handler claims qcom-camss and builds the media graph itself in
+# configure(), including flipping the csiphy -> msm_csid0 link between the rear
+# ov13858 and the front ov02c10, so a media-ctl unit only fights it: pinning
+# csid0 to the rear sensor at boot leaves the front camera disconnected until
+# something re-links it, and the formats such a unit has to guess are what made
+# the old wireupcameras.service die with "Unable to setup formats: Invalid
+# argument (22)" on every boot.
+#
+# v4l-utils stays, for inspecting the graph by hand -- media-ctl -p, and
+# v4l2-ctl --stream-mmap on the RDI node to check the sensor below libcamera.
 dnf install -y v4l-utils
-install -Dm755 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/usr/local/bin/wireupcameras.sh \
-    /usr/local/bin/wireupcameras.sh
-install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/wireupcameras.service \
-	/etc/systemd/system/wireupcameras.service
-systemctl enable wireupcameras.service
+
+# The front ov02c10 needs a libcamera that knows its analogue gain model and
+# black level; upstream libcamera has neither, and there is no plugin mechanism
+# for them, but kernel-sp12in repo offers libcamera with supported models.
+# Pulled in by name because it would otherwise only arrive as a dependency,
+# which makes it easy to lose without noticing.
+dnf install -y libcamera libcamera-ipa
+
+libcamera_nevra=$(rpm -q libcamera)
+case "${libcamera_nevra}" in
+	*.sp12in*) printf 'Using %s\n' "${libcamera_nevra}" ;;
+	*)
+		printf 'Error: %s is Fedora'"'"'s libcamera, not the sp12in rebuild.\n' \
+			"${libcamera_nevra}" >&2
+		printf 'Fedora has probably bumped the release past the rebuild; rebase\n' >&2
+		printf 'patches/ in ../libcamera and tag a new release suffix.\n' >&2
+		exit 1
+		;;
+esac
 
 # Suspend on Snapdragon is still very unstable. This is the reason why
 # 'mem_sleep_default=s2idle' is set explicitly in the cmdline as 'deep' mode
@@ -656,7 +678,7 @@ systemctl enable wireupcameras.service
 #   logind behavior is kept intact with suspend behavior.
 #   gnome default power button behavior was replaced with 'interactive'.
 install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/logind.conf.d/60-surface-power-key.conf \
-	/etc/systemd/login.conf.d/60-surface-power-key.conf
+	/etc/systemd/logind.conf.d/60-surface-power-key.conf
 install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/db/local.d/00-power-button \
 	/etc/dconf/db/local.d/00-power-button
 install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/profile/user \

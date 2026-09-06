@@ -1,0 +1,6 @@
+<image>
+	<!-- Surface Pro 12" (Snapdragon X1P-42-100): the patched kernel + libcamera.-->
+	<repository type="rpm-md" alias="kernel-surface" priority="1">
+		<source path="https://rpm.sayag.it/kernel-sp12in/fedora/$releasever/aarch64/"/>
+	</repository>
+</image>
