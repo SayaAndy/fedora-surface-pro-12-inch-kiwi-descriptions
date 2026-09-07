@@ -38,9 +38,10 @@ BOOT_ROOT="${KERNEL_INSTALL_BOOT_ROOT:-/boot}"
 # (or was removed).
 DTB_SRC="/usr/lib/modules/${KVER}/dtb/${DTB_REL}"
 if [ ! -f "$DTB_SRC" ]; then
-	DTB_SRC="/usr/lib/surface-dtb/$DTB_NAME"
+	# One directory per kernel version under here; see 60-surface-dtb.install.
+	DTB_SRC=$(ls -1 /usr/lib/surface-dtb/*/"$DTB_NAME" 2>/dev/null | sort -V | tail -n1)
 fi
-[ -f "$DTB_SRC" ] || exit 0
+[ -n "$DTB_SRC" ] && [ -f "$DTB_SRC" ] || exit 0
 
 # The boot loader reads the dtb from the boot filesystem, not the module tree
 install -Dm644 "$DTB_SRC" "${BOOT_ROOT}/dtb-${KVER}/${DTB_REL}"

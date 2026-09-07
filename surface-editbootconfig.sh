@@ -27,12 +27,12 @@ esac
 
 dtb_name=x1p42100-microsoft-sp12in.dtb
 
-# The working directory is the image root, so this is kernel-surface's own
-# version-independent copy. config.sh has already failed the build if the
-# package did not provide it.
-dtb_src="usr/lib/surface-dtb/${dtb_name}"
-if [[ ! -f "${dtb_src}" ]]; then
-	echo "surface-editbootconfig: ${dtb_src} not found in the image root" >&2
+# The working directory is the image root, so this is kernel-surface's own copy,
+# under a directory named for the kernel version because that package is
+# installonly. config.sh has already failed the build if it is not there.
+dtb_src=$(ls -1 usr/lib/surface-dtb/*/"${dtb_name}" 2>/dev/null | sort -V | tail -n1)
+if [[ -z "${dtb_src}" ]]; then
+	echo "surface-editbootconfig: no ${dtb_name} under usr/lib/surface-dtb/ in the image root" >&2
 	exit 1
 fi
 
