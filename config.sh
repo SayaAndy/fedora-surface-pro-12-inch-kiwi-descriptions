@@ -462,9 +462,9 @@ fi
 #--------------------------------------
 
 # Device tree. kernel-surface compiles the patched dts in-tree and installs the
-# result twice: into its own module tree (dtb/qcom, from dtbs_install) and
-# version-independently into /usr/lib/surface-dtb. The latter is the master copy
-# 60-surface-dtb.install re-stages into each new kernel's module tree on update,
+# result twice: into its own module tree (dtb/qcom, from dtbs_install) and into
+# /usr/lib/surface-dtb/<kver>/. The latter is the master copy
+# 60-surface-dtb.install re-stages into a kernel that shipped without one,
 # which is the only reason the image no longer carries a prebuilt blob of its
 # own -- the description installs kernel-surface by name and <ignore>s Fedora's
 # kernel packages, so the package is always there.
@@ -478,9 +478,12 @@ fi
 # module-tree copy, anything keyed off /usr/lib/modules/$kver/dtb (including the
 # anaconda post-script) finds nothing and silently does nothing.
 dtb_name=x1p42100-microsoft-sp12in.dtb
-dtb_src="/usr/lib/surface-dtb/$dtb_name"
-if [[ ! -f "$dtb_src" ]]; then
-	printf 'Error: %s is missing, so kernel-surface (built from ../kernel-surface) is not installed.\n' "$dtb_src" >&2
+# One directory per kernel version under /usr/lib/surface-dtb: kernel-surface is
+# installonly, so nothing it owns can be version-unqualified. Only one release is
+# ever installed at this point in the build, but glob anyway rather than assume.
+dtb_src=$(ls -1 /usr/lib/surface-dtb/*/"$dtb_name" 2>/dev/null | sort -V | tail -n1)
+if [[ -z "$dtb_src" ]]; then
+	printf 'Error: no %s under /usr/lib/surface-dtb/, so kernel-surface (built from ../kernel-surface) is not installed.\n' "$dtb_name" >&2
 	exit 1
 fi
 install -Dm644 "$dtb_src" "/usr/lib/modules/$kver/dtb/qcom/$dtb_name"

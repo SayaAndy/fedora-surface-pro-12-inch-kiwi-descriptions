@@ -8,23 +8,30 @@ KVER="$2"
 DTB_NAME=x1p42100-microsoft-sp12in.dtb
 DEST="/usr/lib/modules/${KVER}/dtb/qcom/${DTB_NAME}"
 
-# The master copy comes from kernel-surface: it builds the dtb in-tree from the
+# The master copies come from kernel-surface: it builds the dtb in-tree from the
 # patched dts and installs it under /usr/lib/surface-dtb, deliberately outside
-# any /usr/lib/modules/<kver>, so it can be re-staged into any kernel installed
-# alongside it.
-SRC="/usr/lib/surface-dtb/${DTB_NAME}"
-[ -f "${SRC}" ] || SRC=""
+# any /usr/lib/modules/<kver>, so it can be re-staged into a kernel that ships
+# no device tree of its own -- a stock Fedora one.
+#
+# One directory per kernel version, because kernel-surface is installonly and
+# rpm will not let two installed releases own one unqualified path once the file
+# differs. They are all the same board, so the highest version is as good a
+# choice as any, and is the one most likely to carry recent fixes.
+SRC=$(ls -1 /usr/lib/surface-dtb/*/"${DTB_NAME}" 2>/dev/null | sort -V | tail -n1)
 
 case "${COMMAND}" in
 	add)
-		# No master and no dtb already in this kernel's tree means there is
-		# nothing this board can boot with, so say so rather than failing
-		# silently three steps later in the boot loader.
+		# kernel-surface ships its own dtb through dtbs_install, and that
+		# one is the release-matched copy. Leave it alone; the master is
+		# only for kernels that arrived without one.
+		if [ -f "${DEST}" ]; then
+			exit 0
+		fi
+		# Neither means there is nothing this board can boot with, so say
+		# so rather than failing silently three steps later in the boot
+		# loader.
 		if [ -z "${SRC}" ]; then
-			if [ -f "${DEST}" ]; then
-				exit 0
-			fi
-			echo "60-surface-dtb: no ${DTB_NAME} in /usr/lib/surface-dtb" >&2
+			echo "60-surface-dtb: no ${DTB_NAME} under /usr/lib/surface-dtb" >&2
 			exit 1
 		fi
 		mkdir -p "$(dirname ${DEST})"

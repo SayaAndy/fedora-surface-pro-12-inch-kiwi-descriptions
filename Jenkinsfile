@@ -150,7 +150,7 @@ spec:
                             mv "${src}" "${dst}"
                             ls -lh
 
-                            s5cmd --endpoint-url "${B2_ENDPOINT}" cp \\
+                            /s5cmd --endpoint-url "${B2_ENDPOINT}" cp \\
                                 "${dst}" \\
                                 "s3://${ISO_BUCKET}/fedora/${IMAGE_VERSION}/aarch64/${dst}"
                         '''
