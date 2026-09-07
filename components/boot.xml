@@ -50,7 +50,7 @@
 	     set for this board (device tree, SAM RTC, SAM suspend workaround,
 	     CAMSS/CSI-2, remoteproc attach, clk/PCI/irqchip fixes). It is built from
 	     the sibling ../kernel-surface checkout and comes from the repository
-	     repositories/kernel-surface.xml adds.
+	     repositories/kernel-sp12in.xml adds.
 
 	     It is a single package (kernel image, every module, device trees) and
 	     Provides kernel, kernel-core, kernel-modules, kernel-modules-core and

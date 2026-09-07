@@ -436,6 +436,9 @@ fi
 # Surface Pro 12" customizations
 #--------------------------------------
 
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/yum.repos.d/kernel-sp12in.repo \
+	/etc/yum.repos.d/kernel-sp12in.repo
+
 # Device tree. kernel-surface compiles the patched dts in-tree and installs the
 # result twice: into its own module tree (dtb/qcom, from dtbs_install) and into
 # /usr/lib/surface-dtb/<kver>/. The latter is the master copy
@@ -706,7 +709,7 @@ install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/profile/
 
 dconf update
 
-restorecon -Rv /usr /lib /etc/systemd /etc/dconf /etc/udev/rules.d
+restorecon -Rv /usr /lib /etc/systemd /etc/dconf /etc/udev/rules.d /etc/yum.repos.d
 
 #======================================
 # Set the WSL name for ELN
