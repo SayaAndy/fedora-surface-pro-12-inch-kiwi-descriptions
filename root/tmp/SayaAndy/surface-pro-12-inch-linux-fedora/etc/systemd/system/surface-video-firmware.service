@@ -1,0 +1,12 @@
+[Unit]
+Description=Install Surface Pro 12in video codec firmware from a Windows partition
+ConditionPathExists=!/lib/firmware/qcom/x1p42100/Microsoft/Surface12/qcvss8380_pa.mbn
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/surface-video-firmware.sh
+
+[Install]
+WantedBy=multi-user.target

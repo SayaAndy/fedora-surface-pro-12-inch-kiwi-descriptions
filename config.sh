@@ -670,6 +670,23 @@ case "${libcamera_nevra}" in
 		;;
 esac
 
+# Hardware video decode needs firmware this image is not allowed to carry. The
+# qcom/vpu/vpu30_p1_s7.mbn in linux-firmware is the same codec signed with
+# Qualcomm's SecTools test keys, which a retail Surface's TrustZone rejects, and
+# the production-signed build exists only inside Microsoft's Surface driver
+# package, under terms that grant no redistribution right.
+#
+# So the image ships the means rather than the blob: a script that copies it out
+# of a Windows install the owner already has a licence for, and a unit that runs
+# that once on a dual-boot machine. Where Windows is gone, the script says which
+# driver pack to download and how to point it at one.
+dnf install -y msitools
+install -Dm755 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/usr/local/bin/surface-video-firmware.sh \
+	/usr/local/bin/surface-video-firmware.sh
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system/surface-video-firmware.service \
+	/etc/systemd/system/surface-video-firmware.service
+systemctl enable surface-video-firmware.service
+
 # Suspend on Snapdragon is still very unstable. This is the reason why
 # 'mem_sleep_default=s2idle' is set explicitly in the cmdline as 'deep' mode
 # does not function at all.
