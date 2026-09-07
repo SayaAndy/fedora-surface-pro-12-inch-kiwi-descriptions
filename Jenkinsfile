@@ -151,6 +151,7 @@ spec:
                             ls -lh
 
                             /s5cmd --endpoint-url "${B2_ENDPOINT}" cp \\
+                                --content-type "application/x-iso9660-image" \\
                                 "${dst}" \\
                                 "s3://${ISO_BUCKET}/fedora/${IMAGE_VERSION}/aarch64/${dst}"
                         '''
