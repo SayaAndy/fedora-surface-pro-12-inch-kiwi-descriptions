@@ -1,0 +1,7 @@
+[kernel-sp12in]
+name=kernel-sp12in for Fedora $releasever - $basearch
+baseurl=https://rpm.sayag.it/kernel-sp12in/fedora/$releasever/$basearch/
+enabled=1
+priority=1
+gpgcheck=0
+metadata_expire=6h
