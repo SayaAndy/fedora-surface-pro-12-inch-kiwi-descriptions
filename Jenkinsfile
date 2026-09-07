@@ -17,7 +17,7 @@ pipeline {
         ISO_BUCKET = 'dist-sayagit-fedora-iso'
 
         // Must match the <source path="..."/> in
-        // repositories/kernel-surface.xml.
+        // repositories/kernel-sp12in.xml.
         KERNEL_SURFACE_REPO_URL = 'https://rpm.sayag.it/kernel-sp12in/fedora/45/aarch64'
 
         // awscli2 sends CRC32 checksums by default, which B2 rejects. Ask for
@@ -68,7 +68,7 @@ spec:
                             // something this repository can produce: the image
                             // installs kernel-surface by name and <ignore>s
                             // Fedora's kernel packages. Its pipeline publishes
-                            // it to rpm.sayag.it, which repositories/kernel-surface.xml
+                            // it to rpm.sayag.it, which repositories/kernel-sp12in.xml
                             // points at directly, so there is nothing to stage
                             // here. Fail now rather than several minutes into
                             // kiwi on an unresolvable package name.
