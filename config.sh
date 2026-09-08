@@ -644,6 +644,22 @@ install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system
 # hexagonrpc.service in through the drop-in above.
 systemctl enable hexagonrpc.service
 
+# Fedora's SELinux policy has no qipcrtr_socket permissions for
+# iiosensorproxy_t; the libssc backend needs them to probe the QRTR bus, and
+# without them the daemon exits with "No sensors or missing kernel drivers".
+# Compile and install the local module that grants them (see the .te for
+# details). checkmodule/semodule_package come from checkpolicy; it stays
+# installed because removing it takes policycoreutils-python-utils
+# (semanage, audit2allow) with it.
+dnf install -y checkpolicy
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/usr/local/share/selinux/iio-qipcrtr.te \
+	/usr/local/share/selinux/iio-qipcrtr.te
+checkmodule -M -m -o /usr/local/share/selinux/iio-qipcrtr.mod \
+	/usr/local/share/selinux/iio-qipcrtr.te
+semodule_package -o /usr/local/share/selinux/iio-qipcrtr.pp \
+	-m /usr/local/share/selinux/iio-qipcrtr.mod
+semodule -i /usr/local/share/selinux/iio-qipcrtr.pp
+
 # Cameras (msm/camss). Nothing has to be wired up at boot. libcamera's "simple"
 # pipeline handler claims qcom-camss and builds the media graph itself in
 # configure(), including flipping the csiphy -> msm_csid0 link between the rear

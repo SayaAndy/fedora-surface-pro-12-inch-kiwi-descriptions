@@ -1,0 +1,20 @@
+
+module iio-qipcrtr 1.0;
+
+require {
+	type iiosensorproxy_t;
+	type systemd_userdbd_t;
+	type xdm_var_run_t;
+	class sock_file read;
+	class qipcrtr_socket { create getattr getopt setopt };
+}
+
+#============= iiosensorproxy_t ==============
+
+#!!!! This avc is allowed in the current policy
+allow iiosensorproxy_t self:qipcrtr_socket { create getattr getopt setopt };
+
+#============= systemd_userdbd_t ==============
+
+#!!!! This avc is allowed in the current policy
+allow systemd_userdbd_t xdm_var_run_t:sock_file read;
