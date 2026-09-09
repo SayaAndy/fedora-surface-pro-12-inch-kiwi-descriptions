@@ -2,7 +2,7 @@
 Description=HexagonRPC Service
 
 [Service]
-# The kernel-surface fastrpc driver creates /dev/fastrpc-adsp (no -secure
+ExecStart=/usr/local/bin/hexagonrpcd -f /dev/fastrpc-adsp -d adsp -s
 Restart=on-failure
 
 [Install]
