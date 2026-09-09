@@ -1,16 +1,16 @@
 module iio-qipcrtr 1.0;
 
-// Fedora's policy grants iiosensorproxy_t no qipcrtr_socket permissions at
-// all: the class exists but nothing allows it, because upstream
-// iio-sensor-proxy talks to sensors over IIO and never needed QRTR. The SSC
-// backend libssc brings in here reaches the Qualcomm Sensor Core over the
-// QRTR bus (libssc probes AF_QIPCRTR first; the fastrpc/hexagonrpcd path is
-// what actually serves this board, but the probe alone gets the daemon
-// killed by "QRTR bus unavailable" + "No sensors" without these perms).
-//
-// Hand-written rather than audit2allow'd per-incident: create/bind/... is
-// the full client lifecycle, so a policy reload or libssc update cannot
-// surface a new denied perm one at a time.
+# Fedora's policy grants iiosensorproxy_t no qipcrtr_socket permissions at
+# all: the class exists but nothing allows it, because upstream
+# iio-sensor-proxy talks to sensors over IIO and never needed QRTR. The SSC
+# backend libssc brings in here reaches the Qualcomm Sensor Core over the
+# QRTR bus (libssc probes AF_QIPCRTR first; the fastrpc/hexagonrpcd path is
+# what actually serves this board, but the probe alone gets the daemon
+# killed by "QRTR bus unavailable" + "No sensors" without these perms).
+#
+# Hand-written rather than audit2allow'd per-incident: create/bind/... is
+# the full client lifecycle, so a policy reload or libssc update cannot
+# surface a new denied perm one at a time.
 require {
 	type iiosensorproxy_t;
 	class qipcrtr_socket { create bind connect read write getattr setattr getopt setopt shutdown };
