@@ -709,17 +709,13 @@ install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/system
 	/etc/systemd/system/surface-video-firmware.service
 systemctl enable surface-video-firmware.service
 
-# Suspend on Snapdragon is still very unstable. This is the reason why
-# 'mem_sleep_default=s2idle' is set explicitly in the cmdline as 'deep' mode
-# does not function at all.
-# Even then, suspending via gnome settings daemon results in hard freeze.
-# This is why:
-#   logind behavior is kept intact with suspend behavior.
-#   gnome default power button behavior was replaced with 'interactive'.
 install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/systemd/logind.conf.d/60-surface-power-key.conf \
 	/etc/systemd/logind.conf.d/60-surface-power-key.conf
-install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/db/local.d/00-power-button \
-	/etc/dconf/db/local.d/00-power-button
+
+# Ambient light sensor seems to go nuts after I fixed iio-sensor-proxy. Turning
+# it off for now.
+install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/db/local.d/00-als \
+	/etc/dconf/db/local.d/00-als
 install -Dm644 /tmp/SayaAndy/surface-pro-12-inch-linux-fedora/etc/dconf/profile/user \
 	/etc/dconf/profile/user
 
