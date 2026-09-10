@@ -1,5 +1,6 @@
 [Unit]
 Description=HexagonRPC Service
+ConditionPathExists=/dev/fastrpc-adsp
 
 [Service]
 ExecStart=/usr/local/bin/hexagonrpcd -f /dev/fastrpc-adsp -d adsp -s
