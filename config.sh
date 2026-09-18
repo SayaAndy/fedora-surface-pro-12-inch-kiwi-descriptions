@@ -424,6 +424,31 @@ EOF
 
 fi
 
+if [[ "$kiwi_profiles" == *"FEX"* ]]; then
+cat > graphics_provider.json <<EOF
+{
+  "graphics_provider_v0": {
+    "root": "./",
+    "locales": false,
+    "va_api": false,
+    "vdpau": false,
+    "architectures": {
+      "x86_64-linux-gnu": {
+        "dri": "/usr/lib64/dri",
+        "fallback_library_paths": ["/usr/lib64"],
+        "gconv": "/usr/lib64/gconv"
+      },
+      "i386-linux-gnu": {
+        "dri": "/usr/lib/dri",
+        "fallback_library_paths": ["/usr/lib"],
+        "gconv": "/usr/lib/gconv"
+      }
+    }
+  }
+}
+EOF
+fi
+
 #======================================
 # Set the WSL name for ELN
 #--------------------------------------
