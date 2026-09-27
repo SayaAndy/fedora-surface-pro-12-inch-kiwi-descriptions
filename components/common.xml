@@ -5,6 +5,7 @@
 	</profiles>
 	<packages type="image" patternType="plusRecommended" profiles="BaseCommon">
 		<namedCollection name="standard"/>
+		<package name="libxml2_2.13"/> <!-- Should see afterwards why libxml2_2.13 is explicitly depended on -->
 		<ignore name="qemu-user-static"/> <!-- Saves ~100MB -->
 	</packages>
 	<packages type="image" patternType="plusRecommended" profiles="HardwareCommon">
