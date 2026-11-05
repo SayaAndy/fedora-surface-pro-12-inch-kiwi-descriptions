@@ -17,7 +17,7 @@ I bought this device as I viewed it as a great Linux GNOME tablet, but after sev
 
 **The compiled ISOs can be downloaded [here](https://dist.sayag.it/fedora/45/aarch64).**
 
-This KIWI project is built mainly on the base of Fedora Workstation 45 (Pre-release) LiveCD ISO. Trying a stable version (the latest is Fedora 44 at the time of writing this) is possible, but not tested for now.
+This KIWI project is built mainly on the base of Fedora Workstation 45 LiveCD ISO.
 
 If you want to compile this image manually, **the build arch must be `aarch64`**. It means that if you are on an `amd64` machine, you would have to use aarch64 instructions emulation tools like `binfmt`. Unfortunately, such a tool will drastically increase the compilation time.
 
@@ -32,6 +32,19 @@ To build this on Fedora Linux:
 []$ sudo ./kiwi-build --kiwi-file=Fedora.kiwi --image-type=<image_type> --image-profile=<image_profile> --output-dir ./outdir
 # An example for Workstation Live CD ISO, takes around 16 minutes
 []$ sudo ./kiwi-build --kiwi-file=Fedora.kiwi --image-type=iso --image-profile=Workstation-Live --output-dir ./outdir
+```
+
+### SELinux issues
+
+In the combo of kiwi-ng 11.1.1 and rpm 6.1.0 (latest versions in Fedora 45 by November 5th 2026), rpm runs %sysusers scriptlets through an exec content of rpm_script_t, and with kiwi.te having no such grant, the host enforcement denies the domain transition, resulting in `setup` pkg, and many more, not getting installed inside the build environment.
+
+To fix the issue, reproduce rpm_transition_script for the kiwi domain. There is a script to do exactly this in `selinux/` domain. Do this to proceed with ISO build:
+
+```bash
+cd selinux
+checkmodule -M -m -o kiwi-rpm-script.mod kiwi-rpm-script.te
+semodule_package -o kiwi-rpm-script.pp -m kiwi-rpm-script.mod
+sudo semodule -i kiwi-rpm-script.pp
 ```
 
 ## Feature matrix

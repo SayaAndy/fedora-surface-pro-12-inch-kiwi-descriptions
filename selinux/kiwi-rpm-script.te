@@ -1,0 +1,39 @@
+# Host-side SELinux fix for building with kiwi-ng 11.1.1 on Fedora (kiwi-selinux).
+#
+# kiwi-selinux installs a policy that runs /usr/bin/kiwi-ng in the kiwi_t
+# domain. rpm 6.1 runs %sysusers scriptlets with an rpm_script_t exec
+# context (fedora-selinux rpm_transition_script()).  kiwi.te never grants
+# that transition, so every sysusers scriptlet dies with exit status 127
+# ("command not found" from the exec failure), which is what breaks the
+# bootstrap transaction: setup-* fails, /etc/passwd and /etc/group are never
+# created, and all later user/group lookups fail.
+#
+# This module reproduces fedora's rpm_transition_script(kiwi_t, unconfined_r)
+# for the kiwi domain.  Not part of the image build - install it on the host:
+#
+#   checkmodule -M -m -o kiwi-rpm-script.mod kiwi-rpm-script.te
+#   semodule_package -o kiwi-rpm-script.pp -m kiwi-rpm-script.mod
+#   sudo semodule -i kiwi-rpm-script.pp
+
+module kiwi-rpm-script 1.0;
+
+require {
+	type kiwi_t;
+	type rpm_script_t;
+	attribute rpm_transition_domain;
+	attribute_role rpm_script_roles;
+	role unconfined_r;
+	class process { transition sigchld };
+	class fd use;
+	class fifo_file { read write getattr ioctl };
+}
+
+# rpm_transition_script(), expanded for kiwi_t / unconfined_r
+typeattribute kiwi_t rpm_transition_domain;
+roleattribute unconfined_r rpm_script_roles;
+
+allow kiwi_t rpm_script_t:process transition;
+allow kiwi_t rpm_script_t:fd use;
+allow rpm_script_t kiwi_t:fd use;
+allow rpm_script_t kiwi_t:fifo_file { read write getattr ioctl };
+allow rpm_script_t kiwi_t:process sigchld;
