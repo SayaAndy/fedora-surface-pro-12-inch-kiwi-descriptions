@@ -3,6 +3,8 @@ pipeline {
 
     options {
         timestamps()
+        preserveStashes()
+        buildDiscarder(logRotator(daysToKeepStr: '7'))
     }
 
     environment {
