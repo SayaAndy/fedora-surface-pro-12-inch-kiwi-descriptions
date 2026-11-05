@@ -41,7 +41,7 @@ spec:
     kubernetes.io/arch: arm64
   containers:
     - name: kiwi
-      image: fedora:44
+      image: fedora:45
       imagePullPolicy: Always
       command: [ 'sleep' ]
       args: [ 'infinity' ]
@@ -150,8 +150,9 @@ spec:
                             mv "${src}" "${dst}"
                             ls -lh
 
-                            /s5cmd --endpoint-url "${B2_ENDPOINT}" cp \\
+                            /s5cmd --endpoint-url "${B2_ENDPOINT}" --log debug cp \\
                                 --content-type "application/x-iso9660-image" \\
+                                --show-progress \\
                                 "${dst}" \\
                                 "s3://${ISO_BUCKET}/fedora/${IMAGE_VERSION}/aarch64/${dst}"
                         '''
