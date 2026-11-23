@@ -71,7 +71,6 @@ sudo semodule -i kiwi-rpm-script.pp
 
 ## Compromises
 
-* Live CD has to run in RAM, so `rd.live.ram=1` is set for cmdline. Otherwise, at least on my ancient flash drive, it fails to load multiple necessary services, including `polkit`. So, ~5 minutes of loading on USB 2 drive, while screen is not backlit, is to be expected.
 * No rescue vmlinuz.
 * No secure boot possible for this ISO for now, as the platform used is `efi` and not `uefi`.
 * No GRUB auto hidden menu. Trying to have the menu hidden results in system restarting after trying to boot it.

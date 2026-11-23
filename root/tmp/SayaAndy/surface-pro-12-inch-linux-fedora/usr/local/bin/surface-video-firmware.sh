@@ -145,8 +145,8 @@ from_msi() {
 	cleanup_dirs+=("${work}")
 
 	log "extracting ${pack}"
-	( cd "${work}" && msiextract "${pack}" >/dev/null )
-
+	msiextract --directory "${work}" "${pack}" >/dev/null
+	
 	found=$(find_blob "${work}")
 	[[ -n ${found} ]] || die "no ${BLOB} inside ${pack}; is it the Surface Pro 12in driver pack?"
 
